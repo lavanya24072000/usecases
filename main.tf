@@ -11,16 +11,16 @@ module "vpc" {
 # Create web servers in public subnets
 module "web_server_1" {
   source             = "./modules/web_server"
-  ami_id             = "var.ami_id"  # Replace with your AMI
-  instance_type      = "var.instance_type"
+  ami_id             = var.ami_id  # Replace with your AMI
+  instance_type      = var.instance_type
   public_subnet_id   = module.vpc.public_subnet_1_id
   web_sg_id          = module.vpc.web_security_group_id
 }
 
 module "web_server_2" {
   source             = "./modules/web_server"
-  ami_id             = "var.ami_id"  # Replace with your AMI
-  instance_type      = "var.instance_type"
+  ami_id             = var.ami_id  # Replace with your AMI
+  instance_type      = var.instance_type
   public_subnet_id   = module.vpc.public_subnet_2_id
   web_sg_id          = module.vpc.web_security_group_id
 }
