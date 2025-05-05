@@ -1,5 +1,5 @@
 ami_id="ami-058a8a5ab36292159"
-instance_type="t2.medium"
+instance_type="t2.micro"
 db_username = "admin"
 db_password = "prashola"
 db_name = "mydb"
