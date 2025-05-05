@@ -1,7 +1,6 @@
 name: Provision Infra using Terraform via EC2 
 on:
-   workflow_dispatch:
- 
+ push:
 permissions:
   id-token: write
   contents: read
