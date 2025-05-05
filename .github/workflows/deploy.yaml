@@ -25,16 +25,9 @@ jobs:
         with:
           terraform_version: 1.10.5
           
-      - name: Install tflint
-        run: |
-             curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-
-      - name: Run tflint with custom config
-        run: |
-          echo "Using custom rules from .tflint.hcl"
-          tflint --config=./.tflint.hcl
-        continue-on-error: true
-
+      - name: Terraform formtat (Create EC2)
+        run: terraform fmt
+        
 
       - name: Terraform init (Create EC2)
         run: terraform init
@@ -45,6 +38,15 @@ jobs:
       - name: Terraform plan (Create EC2)
         run: terraform plan
         
+      - name: Install tflint
+        run: |
+             curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+
+      - name: Run tflint with custom config
+        run: |
+          echo "Using custom rules from .tflint.hcl"
+          tflint --config=./.tflint.hcl
+        continue-on-error: true
       # - name: Install terraform-docs
       #   run: |
       #       curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh
