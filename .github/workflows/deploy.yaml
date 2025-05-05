@@ -45,21 +45,21 @@ jobs:
       - name: Terraform plan (Create EC2)
         run: terraform plan
         
-      - name: Install terraform-docs
-        run: |
-            curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh | bash
+      # - name: Install terraform-docs
+      #   run: |
+      #       curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh
  
-      - name: Generate Terraform docs
-        run: terraform-docs markdown . > README.md
+      # - name: Generate Terraform docs
+      #   run: terraform-docs markdown . > README.md
  
-      - name: Commit docs
-        if: github.ref == 'refs/heads/main'
-        run: |
-             git config user.name "GitHub Actions"
-             git config user.email "actions@github.com"
-             git add README.md
-             git diff --cached --quiet || git commit -m "Update Terraform docs"
-             git push
+      # - name: Commit docs
+      #   if: github.ref == 'refs/heads/main'
+      #   run: |
+      #        git config user.name "GitHub Actions"
+      #        git config user.email "actions@github.com"
+      #        git add README.md
+      #        git diff --cached --quiet || git commit -m "Update Terraform docs"
+      #        git push
              
       - name: Generate terraform docs
         uses: terraform-docs/gh-actions@v1.0.0
