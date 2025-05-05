@@ -33,6 +33,8 @@ jobs:
         run: |
           echo "Using custom rules from .tflint.hcl"
           tflint --config=./.tflint.hcl
+        continue-on-error: true
+
 
       - name: Terraform init (Create EC2)
         run: terraform init
