@@ -11,16 +11,16 @@ module "vpc" {
 # Create web servers in public subnets
 module "web_server_1" {
   source             = "./modules/web_server"
-  ami_id             = "ami-058a8a5ab36292159"  # Replace with your AMI
-  instance_type      = "t2.medium"
+  ami_id             = "var.ami_id"  # Replace with your AMI
+  instance_type      = "var.instance_type"
   public_subnet_id   = module.vpc.public_subnet_1_id
   web_sg_id          = module.vpc.web_security_group_id
 }
 
 module "web_server_2" {
   source             = "./modules/web_server"
-  ami_id             = "ami-058a8a5ab36292159"  # Replace with your AMI
-  instance_type      = "t2.micro"
+  ami_id             = "var.ami_id"  # Replace with your AMI
+  instance_type      = "var.instance_type"
   public_subnet_id   = module.vpc.public_subnet_2_id
   web_sg_id          = module.vpc.web_security_group_id
 }
@@ -28,8 +28,8 @@ module "web_server_2" {
 # Create RDS MySQL instance in private subnets
 module "rds" {
   source            = "./modules/rds"
-  db_username       = "admin"
-  db_password       = "prashola"
-  db_name           = "mydb"
+  db_username       = var.db_username
+  db_password       = var.db_password
+  db_name           = var.db_name
   private_subnet_id = module.vpc.private_subnet_1_id
 }
