@@ -24,15 +24,50 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.10.5
+          
+      - name: Install tflint
+        run: |
+             curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+
+      - name: Run tflint with custom config
+        run: |
+          echo "Using custom rules from .tflint.hcl"
+          tflint --config=./.tflint.hcl
 
       - name: Terraform init (Create EC2)
         run: terraform init
+        
+      - name: Terraform validate 
+        run: terraform validate 
 
-      - name: Terraform init (Create EC2)
+      - name: Terraform plan (Create EC2)
         run: terraform plan
-         
+        
+      - name: Install terraform-docs
+        run: |
+            curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh | bash
+ 
+      - name: Generate Terraform docs
+        run: terraform-docs markdown . > README.md
+ 
+      - name: Commit docs
+        if: github.ref == 'refs/heads/main'
+        run: |
+             git config user.name "GitHub Actions"
+             git config user.email "actions@github.com"
+             git add README.md
+             git diff --cached --quiet || git commit -m "Update Terraform docs"
+             git push
+             
+      - name: Generate terraform docs
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+           output-file: README.md
+           output-method: inject
+          
       - name: Terraform Apply (Create EC2)
         run: terraform apply -auto-approve
-      - name: Terraform Apply (Create EC2)
-        run: terraform destroy 
+        
+      # - name: Terraform destroy (Create EC2)
+      #   run: terraform destroy 
         
