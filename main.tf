@@ -19,7 +19,7 @@ module "web_server_1" {
 
 module "web_server_2" {
   source             = "./modules/web_server"
-  ami_id             = "ami-058a8a5ab36292159  # Replace with your AMI
+  ami_id             = "ami-058a8a5ab36292159"  # Replace with your AMI
   instance_type      = "t2.micro"
   public_subnet_id   = module.vpc.public_subnet_2_id
   web_sg_id          = module.vpc.web_security_group_id
