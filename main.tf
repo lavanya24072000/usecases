@@ -31,5 +31,7 @@ module "rds" {
   db_username       = var.db_username
   db_password       = var.db_password
   db_name           = var.db_name
-  private_subnet_id = module.vpc.private_subnet_1_id
+  private_subnet_id_1= module.vpc.private_subnet_1_id
+  private_subnet_id_2= module.vpc.private_subnet_2.id
+  
 }
