@@ -1,4 +1,4 @@
-resource "aws_db_instance" "default" {
+resource "aws_db_instance" "this" {
   allocated_storage    = 20
   storage_type         = "gp2"
   engine               = "mysql"
@@ -7,16 +7,16 @@ resource "aws_db_instance" "default" {
   db_name              = var.db_name
   username             = var.db_username
   password             = var.db_password
-  parameter_group_name = "default.mysql8.0"
+  parameter_group_name = "this.mysql8.0"
   skip_final_snapshot  = true
-  db_subnet_group_name = aws_db_subnet_group.default.name
+  db_subnet_group_name = aws_db_subnet_group.this.name
 
   tags = {
     Name = "MyDatabase"
   }
 }
 
-resource "aws_db_subnet_group" "default" {
-  name       = "default"
+resource "aws_db_subnet_group" "first" {
+  name       = "first"
   subnet_ids = [var.private_subnet_id]
 }
