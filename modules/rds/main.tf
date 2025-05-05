@@ -7,7 +7,6 @@ resource "aws_db_instance" "this" {
   db_name              = var.db_name
   username             = var.db_username
   password             = var.db_password
-  parameter_group_name = "this.mysql8.0"
   skip_final_snapshot  = true
   db_subnet_group_name = aws_db_subnet_group.dummy.name
 
