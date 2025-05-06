@@ -157,7 +157,7 @@ resource "aws_lb_listener_rule" "devlake_rule" {
 
 # EC2 Instance - OpenProject
 resource "aws_instance" "openproject" {
-  ami           = "ami-04f167a56786e4b09"
+  ami           = "ami-0df368112825f8d8f"
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
@@ -169,7 +169,7 @@ resource "aws_instance" "openproject" {
               apt-get install -y docker.io
               systemctl start docker
               systemctl enable docker
-              docker run -dit -p 8080:80 -e OPENPROJECT_SECRET_KEY_BASE=secret -e OPENPROJECT_HOST__NAME=0.0.0.0:80 -e OPENPROJECT_HTTPS=false openproject/community:12
+              docker run -dit -p 80:80 -e OPENPROJECT_SECRET_KEY_BASE=secret -e OPENPROJECT_HOST__NAME=0.0.0.0:80 -e OPENPROJECT_HTTPS=false openproject/community:12
               EOT
 
   tags = merge(var.tags, {
@@ -179,7 +179,7 @@ resource "aws_instance" "openproject" {
 
 # EC2 Instance - DevLake
 resource "aws_instance" "devlake" {
-  ami           = "ami-04f167a56786e4b09"
+  ami           = "ami-0df368112825f8d8f"
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
