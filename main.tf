@@ -112,24 +112,12 @@ resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_lb.app_lb.arn
   port              = 80
   protocol          = "HTTP"
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.openproject_tg.arn
+    }
 }
   
-
-resource "aws_lb_listener_rule" "openproject_rule" {
-  listener_arn = aws_lb_listener.listener.arn
-  priority     = 10
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.openproject_tg.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/"]
-    }
-  }
-}
 
 resource "aws_lb_listener_rule" "devlake_rule" {
   listener_arn = aws_lb_listener.listener.arn
