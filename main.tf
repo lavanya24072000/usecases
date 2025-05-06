@@ -167,7 +167,7 @@ resource "aws_instance" "openproject" {
               EOF
 
   tags = merge(var.tags, {
-    Name = lookup(var.tags, "Name", "default") "-OpenProject"
+    Name = "${lookup(var.tags, "Name", "default")} "-OpenProject"
   })
 }
 
