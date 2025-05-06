@@ -15,7 +15,7 @@ variable "instance_type" {
 }
 
 variable "tags" {
-  type= list(string)
+  type= map(string)
   default = {
     Name        = "OpenProject-DevLake-Setup"
     Environment = "Dev"
