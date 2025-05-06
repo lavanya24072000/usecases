@@ -128,7 +128,7 @@ resource "aws_lb_listener" "listener_openproject" {
 # ALB Listener & Rules for DevLake
 resource "aws_lb_listener" "listener_devlake" {
   load_balancer_arn = aws_lb.app_lb.arn
-  port              = 4000
+  port              = 80
   protocol          = "HTTP"
   default_action {
     type = "forward"
