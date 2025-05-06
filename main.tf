@@ -60,7 +60,6 @@ resource "aws_route_table_association" "b" {
 resource "aws_security_group" "instance_sg" {
   name   = "instance-sg"
   vpc_id = aws_vpc.main.id
-
   dynamic "ingress" {
     for_each = var.ports
     content {
@@ -83,14 +82,15 @@ resource "aws_security_group" "instance_sg" {
   }
 }
 
-# ALB
-resource "aws_lb" "app_lb_open" {
+" "app_lb_open" {
   name               = "openproject-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.instance_sg.id]
-  subnets            = [aws_subnet.public.id, aws_subnet.public.id]
+  subnets            = [aws_subnet.public.id, aws_subnet.public_2.id]
 }
+
+# ALB for DevLake
 resource "aws_lb" "app_lb" {
   name               = "devlake-alb"
   internal           = false
@@ -114,27 +114,27 @@ resource "aws_lb_target_group" "devlake_tg" {
   vpc_id   = aws_vpc.main.id
 }
 
-# ALB Listener & Rules
-resource "aws_lb_listener" "listener" {
+# ALB Listener & Rules for OpenProject
+resource "aws_lb_listener" "listener_openproject" {
   load_balancer_arn = aws_lb.app_lb_open.arn
   port              = 80
   protocol          = "HTTP"
   default_action {
     type = "forward"
     target_group_arn = aws_lb_target_group.openproject_tg.arn
-    }
+  }
 }
-  resource "aws_lb_listener" "listeners" {
+
+# ALB Listener & Rules for DevLake
+resource "aws_lb_listener" "listener_devlake" {
   load_balancer_arn = aws_lb.app_lb.arn
   port              = 4000
   protocol          = "HTTP"
   default_action {
     type = "forward"
     target_group_arn = aws_lb_target_group.devlake_tg.arn
-    }
+  }
 }
-
-
 
 # EC2 Instance - OpenProject
 resource "aws_instance" "openproject" {
@@ -143,7 +143,6 @@ resource "aws_instance" "openproject" {
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   associate_public_ip_address = true
-
   user_data = <<-EOT
               #!/bin/bash
               apt-get update -y
@@ -162,9 +161,10 @@ resource "aws_instance" "openproject" {
 resource "aws_instance" "devlake" {
   ami           = "ami-0df368112825f8d8f"
   instance_type = var.instance_type
-  subnet_id     = aws_subnet.public.id
+  subnet_id     = aws_subnet.public_2.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   associate_public_ip_address = true
+
   user_data = <<-EOT
               #!/bin/bash
               apt-get update -y
@@ -177,9 +177,8 @@ resource "aws_instance" "devlake" {
               docker-compose up -d
               EOT
 
-
   tags = merge(var.tags, {
-    Name ="${lookup(var.tags, "Name", "default")}-DevLake"
+    Name = "${lookup(var.tags, "Name", "default")}-DevLake"
   })
 }
 
@@ -193,5 +192,5 @@ resource "aws_lb_target_group_attachment" "openproject_attachment" {
 resource "aws_lb_target_group_attachment" "devlake_attachment" {
   target_group_arn = aws_lb_target_group.devlake_tg.arn
   target_id        = aws_instance.devlake.id
-  port             = 8080
+  port             = 4000
 }
