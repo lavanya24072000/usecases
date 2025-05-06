@@ -167,7 +167,7 @@ resource "aws_instance" "openproject" {
 
 # EC2 Instance - DevLake
 resource "aws_instance" "devlake" {
-  ami           = data.aws_ami.latest_amazon_linux.id
+  ami           = "ami-058a8a5ab36292159"
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
