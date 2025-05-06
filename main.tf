@@ -1,7 +1,6 @@
 provider "aws" {
   region = var.aws_region
 }
-
 # Get latest Amazon Linux 2 AMI
 data "aws_ami" "latest_amazon_linux" {
   most_recent = true
