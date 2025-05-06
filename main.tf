@@ -2,8 +2,6 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-
-
 # VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
@@ -23,6 +21,17 @@ resource "aws_subnet" "public" {
   }
 }
 
+# Public Subnet in a different Availability Zone
+resource "aws_subnet" "public_2" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.2.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "eu-west-1b"
+  tags = {
+    Name = "Public-Subnet-2"
+  }
+}
+
 # Internet Gateway
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.main.id
@@ -39,6 +48,11 @@ resource "aws_route_table" "public" {
 
 resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "b" {
+  subnet_id      = aws_subnet.public_2.id
   route_table_id = aws_route_table.public.id
 }
 
@@ -75,7 +89,7 @@ resource "aws_lb" "app_lb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.instance_sg.id]
-  subnets            = [aws_subnet.public.id]
+  subnets            = [aws_subnet.public.id, aws_subnet.public_2.id]
 }
 
 # ALB Target Groups
@@ -143,7 +157,7 @@ resource "aws_lb_listener_rule" "devlake_rule" {
 
 # EC2 Instance - OpenProject
 resource "aws_instance" "openproject" {
-  ami           = "ami-0df368112825f8d8f"
+  ami           = "ami-04f167a56786e4b09"
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
@@ -165,7 +179,7 @@ resource "aws_instance" "openproject" {
 
 # EC2 Instance - DevLake
 resource "aws_instance" "devlake" {
-  ami           = "ami-0df368112825f8d8f"
+  ami           = "ami-04f167a56786e4b09"
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
