@@ -82,7 +82,7 @@ resource "aws_security_group" "instance_sg" {
   }
 }
 
-" "app_lb_open" {
+resource "aws_lb"  "app_lb_open" {
   name               = "openproject-alb"
   internal           = false
   load_balancer_type = "application"
@@ -170,8 +170,8 @@ resource "aws_instance" "devlake" {
               apt-get update -y
               apt-get install -y docker.io
               systemctl start docker
-              cd usecases
               git clone https://github.com/lavanya24072000/usecases.git
+              cd usecases
               curl -SL https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
               chmod +x /usr/local/bin/docker-compose
               docker-compose up -d
