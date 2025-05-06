@@ -134,7 +134,7 @@ resource "aws_lb_listener_rule" "openproject_rule" {
 
   condition {
     path_pattern {
-      values = ["/login*"]
+      values = ["/login"]
     }
   }
 }
@@ -150,7 +150,7 @@ resource "aws_lb_listener_rule" "devlake_rule" {
 
   condition {
     path_pattern {
-      values = ["/user*"]
+      values = ["/user"]
     }
   }
 }
