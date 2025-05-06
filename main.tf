@@ -171,7 +171,8 @@ resource "aws_instance" "devlake" {
               apt-get install -y docker.io
               systemctl start docker
               systemctl enable docker
-              docker run -dit -p 8080:80 -e OPENPROJECT_SECRET_KEY_BASE=secret -e OPENPROJECT_HOST__NAME=0.0.0.0:80 -e OPENPROJECT_HTTPS=false apache/devlake:v0.17.0-beta
+              git clone https://github.com/lavanya24072000/usecases.git
+              docker-compose up -d
               EOT
 
 
