@@ -102,7 +102,7 @@ resource "aws_lb_target_group" "openproject_tg" {
 
 resource "aws_lb_target_group" "devlake_tg" {
   name     = "devlake-tg"
-  port     = 80
+  port     = 8080
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 }
@@ -171,7 +171,7 @@ resource "aws_instance" "devlake" {
               amazon-linux-extras install docker -y
               service docker start
               usermod -a -G docker ec2-user
-              docker run -d -p 80:80 apache/devlake:latest
+              docker run -d -p 8080:80 apache/devlake:v0.17.0-beta3
               EOF
 
   tags = merge(var.tags, {
