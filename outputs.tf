@@ -1,11 +1,11 @@
-output "web_server_1_public_ip" {
-  value = module.web_server_1.public_ip
+output "alb_dns_name" {
+  value = aws_lb.app_lb.dns_name
 }
 
-output "web_server_2_public_ip" {
-  value = module.web_server_2.public_ip
+output "openproject_instance_ip" {
+  value = aws_instance.openproject.public_ip
 }
 
-output "rds_endpoint" {
-  value = module.rds.endpoint
+output "devlake_instance_ip" {
+  value = aws_instance.devlake.public_ip
 }

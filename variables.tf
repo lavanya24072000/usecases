@@ -1,26 +1,18 @@
-variable "ami_id" {
-  description = "AMI ID for EC2 instance"
-  type        = string
+variable "aws_region" {
+  default = "us-east-1"
 }
 
 variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
+  default = "t2.micro"
 }
 
-
-variable "db_username" {
-  description = "Database username"
-  type        = string
+variable "ports" {
+  default = [22, 80, 8080]
 }
 
-variable "db_password" {
-  description = "Database password"
-  type        = string
-  sensitive   = true
-}
-
-variable "db_name" {
-  description = "Database name"
-  type        = string
+variable "tags" {
+  default = {
+    Name        = "OpenProject-DevLake-Setup"
+    Environment = "Dev"
+  }
 }
