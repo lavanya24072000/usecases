@@ -130,7 +130,7 @@ resource "aws_lb_listener_rule" "devlake_rule" {
 
   condition {
     path_pattern {
-      values = ["/user"]
+      values = ["/login"]
     }
   }
 }
@@ -189,5 +189,5 @@ resource "aws_lb_target_group_attachment" "openproject_attachment" {
 resource "aws_lb_target_group_attachment" "devlake_attachment" {
   target_group_arn = aws_lb_target_group.devlake_tg.arn
   target_id        = aws_instance.devlake.id
-  port             = 80
+  port             = 8080
 }
