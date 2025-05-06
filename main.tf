@@ -112,7 +112,7 @@ resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_lb.app_lb.arn
   port              = 80
   protocol          = "HTTP"
-
+}
   
 
 resource "aws_lb_listener_rule" "openproject_rule" {
