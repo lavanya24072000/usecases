@@ -84,8 +84,15 @@ resource "aws_security_group" "instance_sg" {
 }
 
 # ALB
+resource "aws_lb" "app_lb_open" {
+  name               = "openproject-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.instance_sg.id]
+  subnets            = [aws_subnet.public.id, aws_subnet.public.id]
+}
 resource "aws_lb" "app_lb" {
-  name               = "openproject-devlake-alb"
+  name               = "devlake-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.instance_sg.id]
@@ -102,14 +109,14 @@ resource "aws_lb_target_group" "openproject_tg" {
 
 resource "aws_lb_target_group" "devlake_tg" {
   name     = "devlake-tg"
-  port     = 8080
+  port     = 4000
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 }
 
 # ALB Listener & Rules
 resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_lb.app_lb.arn
+  load_balancer_arn = aws_lb.app_lb_open.arn
   port              = 80
   protocol          = "HTTP"
   default_action {
@@ -117,23 +124,17 @@ resource "aws_lb_listener" "listener" {
     target_group_arn = aws_lb_target_group.openproject_tg.arn
     }
 }
-  
-
-resource "aws_lb_listener_rule" "devlake_rule" {
-  listener_arn = aws_lb_listener.listener.arn
-  priority     = 20
-
-  action {
-    type             = "forward"
+  resource "aws_lb_listener" "listeners" {
+  load_balancer_arn = aws_lb.app_lb.arn
+  port              = 4000
+  protocol          = "HTTP"
+  default_action {
+    type = "forward"
     target_group_arn = aws_lb_target_group.devlake_tg.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/login"]
     }
-  }
 }
+
+
 
 # EC2 Instance - OpenProject
 resource "aws_instance" "openproject" {
@@ -169,8 +170,10 @@ resource "aws_instance" "devlake" {
               apt-get update -y
               apt-get install -y docker.io
               systemctl start docker
-              systemctl enable docker
+              cd usecases
               git clone https://github.com/lavanya24072000/usecases.git
+              curl -SL https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+              chmod +x /usr/local/bin/docker-compose
               docker-compose up -d
               EOT
 
