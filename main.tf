@@ -113,15 +113,7 @@ resource "aws_lb_listener" "listener" {
   port              = 80
   protocol          = "HTTP"
 
-  default_action {
-    type = "fixed-response"
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "This is default page"
-      status_code  = "404"
-    }
-  }
-}
+  
 
 resource "aws_lb_listener_rule" "openproject_rule" {
   listener_arn = aws_lb_listener.listener.arn
@@ -134,7 +126,7 @@ resource "aws_lb_listener_rule" "openproject_rule" {
 
   condition {
     path_pattern {
-      values = ["/login"]
+      values = ["/"]
     }
   }
 }
