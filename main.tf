@@ -84,7 +84,6 @@ resource "aws_lb_target_group" "openproject_tg" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
-  target_type="instance"
 }
 
 resource "aws_lb_target_group" "devlake_tg" {
@@ -92,7 +91,6 @@ resource "aws_lb_target_group" "devlake_tg" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
-  target_type="instance"
 }
 
 # ALB Listener & Rules
@@ -145,20 +143,20 @@ resource "aws_lb_listener_rule" "devlake_rule" {
 
 # EC2 Instance - OpenProject
 resource "aws_instance" "openproject" {
-  ami           = "ami-058a8a5ab36292159"
+  ami           = "ami-04f167a56786e4b09"
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   associate_public_ip_address = true
 
-  user_data = <<-EOF
+  user_data = <<-EOT
               #!/bin/bash
-              yum update -y
-              amazon-linux-extras install docker -y
-              service docker start
-              usermod -a -G docker ec2-user
-              docker run -d -p 80:80 openproject/community:latest
-              EOF
+              apt-get update -y
+              apt-get install -y docker.io
+              systemctl start docker
+              systemctl enable docker
+              docker run -dit -p 8080:80 -e OPENPROJECT_SECRET_KEY_BASE=secret -e OPENPROJECT_HOST__NAME=0.0.0.0:80 -e OPENPROJECT_HTTPS=false openproject/community:12
+              EOT
 
   tags = merge(var.tags, {
     Name = "${lookup(var.tags, "Name", "default")}-OpenProject"
@@ -167,7 +165,7 @@ resource "aws_instance" "openproject" {
 
 # EC2 Instance - DevLake
 resource "aws_instance" "devlake" {
-  ami           = "ami-058a8a5ab36292159"
+  ami           = "ami-04f167a56786e4b09"
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
