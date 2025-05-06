@@ -164,15 +164,15 @@ resource "aws_instance" "devlake" {
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   associate_public_ip_address = true
-
-  user_data = <<-EOF
+  user_data = <<-EOT
               #!/bin/bash
-              yum update -y
-              amazon-linux-extras install docker -y
-              service docker start
-              usermod -a -G docker ec2-user
-              docker run -d -p 8080:80 apache/devlake:v0.17.0-beta3
-              EOF
+              apt-get update -y
+              apt-get install -y docker.io
+              systemctl start docker
+              systemctl enable docker
+              docker run -dit -p 8080:80 -e OPENPROJECT_SECRET_KEY_BASE=secret -e OPENPROJECT_HOST__NAME=0.0.0.0:80 -e OPENPROJECT_HTTPS=false apache/devlake:v0.17.0-beta
+              EOT
+
 
   tags = merge(var.tags, {
     Name ="${lookup(var.tags, "Name", "default")}-DevLake"
