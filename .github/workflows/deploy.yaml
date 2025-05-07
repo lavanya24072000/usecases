@@ -81,7 +81,7 @@ jobs:
           git commit -m "📘 terraform-docs: automated update" || echo "No changes to commit"
           
           # Push changes to the correct branch
-          git push https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:"$BRANCH_NAME"
+          git push https://github-actions:${{ secrets.GITHUB }}@github.com/${{ github.repository }} HEAD:"$BRANCH_NAME"
              
       # - name: Generate terraform docs
       #   uses: terraform-docs/gh-actions@v1.0.0
