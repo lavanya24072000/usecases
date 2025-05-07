@@ -1,7 +1,7 @@
 
-Resource "aws_iam_role" "lambda_exec" {
-  Name = "lambda_exec_role"
-  Assume_role_policy = jsonencode({
+resource "aws_iam_role" "lambda_exec" {
+  name = "lambda_exec_role"
+  assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
       Effect = "Allow",
@@ -13,10 +13,10 @@ Resource "aws_iam_role" "lambda_exec" {
   })
 }
 
-Resource "aws_iam_role_policy" "lambda_policy" {
-  Name = "lambda_policy"
-  Role = aws_iam_role.lambda_exec.id
-  Policy = jsonencode({
+resource "aws_iam_role_policy" "lambda_policy" {
+  name = "lambda_policy"
+  role = aws_iam_role.lambda_exec.id
+  policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
@@ -41,6 +41,6 @@ Resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 
-Output "lambda_role_arn" {
-  Value = aws_iam_role.lambda_exec.arn
+output "lambda_role_arn" {
+  value = aws_iam_role.lambda_exec.arn
 }
