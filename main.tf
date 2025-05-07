@@ -1,22 +1,22 @@
-module “s3” {
+module "s3" {
   Source                = "./modules/s3"
   Source_bucket_name    = var.source_bucket_name
   Destination_bucket_name = var.destination_bucket_name
 }
 
-module “sns” {
+module "sns" {
   Source          = "./modules/sns"
   Sns_topic_name  = var.sns_topic_name
 }
 
-module “iam” {
+module "iam" {
   Source                 = "./modules/iam"
   Source_bucket_arn      = module.s3.source_bucket_arn
   Destination_bucket_arn = module.s3.destination_bucket_arn
   Sns_topic_arn          = module.sns.sns_topic_arn
 }
 
-module “lambda” {
+module "lambda" {
   Source                = "./modules/lambda"
   Lambda_role_arn       = module.iam.lambda_role_arn
   Source_bucket         = var.source_bucket_name
