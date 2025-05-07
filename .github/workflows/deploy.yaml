@@ -51,8 +51,15 @@ jobs:
       #   run: |
       #       curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh
  
-      - name: Generate Terraform docs
-        run: terraform-docs markdown . > README.md
+      # - name: Generate Terraform docs
+      #   run: terraform-docs markdown . > README.md
+      - name: Generate terraform docs
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+           working-dir: modules/
+           git-push: false
+           output-file: README.md
+           output-method: replace
  
       - name: Commit docs
         if: github.ref == 'refs/heads/user-1'
