@@ -1,3 +1,9 @@
+
+provider "aws" {
+  region = "eu-west-1"
+}
+
+
 module "s3" {
   source                = "./modules/s3"
   source_bucket_name    = var.source_bucket_name
