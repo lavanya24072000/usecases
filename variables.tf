@@ -1,5 +1,5 @@
 variable "ami_id" {
-  description = "AMI ID for EC2 instance"
+  description = "AMI ID for EC2 instance-01"
   type        = string
 }
 
