@@ -7,6 +7,7 @@ variable "db_username" {
 variable "db_password" {
   type        = string
 }
+
 variable "private_subnet_id_1" {
   type        = string
 }
