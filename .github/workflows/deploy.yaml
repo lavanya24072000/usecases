@@ -47,5 +47,12 @@ jobs:
             {{ .Content }}
             <!-- END_TF_DOCS -->
           indention: 2
+          git-commit-message: terraform-docs:"automated action"
           git-push-sign-off: false
           fail-on-diff: false
+        env:
+          AWS_DEFAULT_REGION: us-east-2
+          AWS_REGION: us-east-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
