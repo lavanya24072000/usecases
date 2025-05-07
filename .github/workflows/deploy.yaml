@@ -57,16 +57,25 @@ jobs:
       #   run: terraform-docs markdown . > README.md
       - name: Generate terraform docs
         uses: terraform-docs/gh-actions@main
-        with:
-           working-dir: .
-           git-push: "true"
-           output-file: README.md
-           output-method: inject
+        with:           
+          working-dir: .
+          git-push: true
+          output-file: README.md
+          output-method: inject
+          config-file: disabled
+          atlantis-file: disabled
+          find-dir: disabled
+          recursive: false
+          recursive-path: modules
+          output-format: markdown table
+    
+
  
       # - name: Commit docs
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
+      #   run: |S
+
       #     BRANCH_NAME="users"
          
       #     # Configure Git user
