@@ -1,6 +1,6 @@
 name: Provision Infra using Terraform via EC2 
 on:
- push:
+ pull_request:
 permissions:
   id-token: write
   contents: read
@@ -25,48 +25,49 @@ jobs:
         with:
           terraform_version: 1.10.5
           
-      - name: Terraform formtat (Create EC2)
-        run: terraform fmt
+      # - name: Terraform formtat (Create EC2)
+      #   run: terraform fmt
         
 
-      - name: Terraform init (Create EC2)
-        run: terraform init
+      # - name: Terraform init (Create EC2)
+      #   run: terraform init
         
-      - name: Terraform validate 
-        run: terraform validate 
+      # - name: Terraform validate 
+      #   run: terraform validate 
 
-      # - name: Terraform plan (Create EC2)
-      #   run: terraform plan
+      # # - name: Terraform plan (Create EC2)
+      # #   run: terraform plan
         
-      # - name: Install tflint
+      # # - name: Install tflint
+      # #   run: |
+      # #        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+
+      # # - name: Run tflint with custom config
+      # #   run: |
+      # #     echo "Using custom rules from .tflint.hcl"
+      # #     tflint --config=./.tflint.hcl
+      # #   continue-on-error: true
+      # - name: Install terraform-docs
       #   run: |
-      #        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-
-      # - name: Run tflint with custom config
+      #       curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh
+ 
+      # - name: Generate Terraform docs
+      #   run: terraform-docs markdown . > README.md
+ 
+      # - name: Commit docs
+      #   if: github.ref == 'refs/heads/main'
       #   run: |
-      #     echo "Using custom rules from .tflint.hcl"
-      #     tflint --config=./.tflint.hcl
-      #   continue-on-error: true
-      - name: Install terraform-docs
-        run: |
-            curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh
- 
-      - name: Generate Terraform docs
-        run: terraform-docs markdown . > README.md
- 
-      - name: Commit docs
-        if: github.ref == 'refs/heads/main'
-        run: |
-             git config user.name "GitHub Actions"
-             git config user.email "actions@github.com"
-             git add README.md
-             git diff --cached --quiet || git commit -m "Update Terraform docs"
-             git push
+      #        git config user.name "GitHub Actions"
+      #        git config user.email "actions@github.com"
+      #        git add README.md
+      #        git diff --cached --quiet || git commit -m "Update Terraform docs"
+      #        git push
              
       - name: Generate terraform docs
         uses: terraform-docs/gh-actions@v1.0.0
         with:
-           working-dir: ./modules/vpc
+           working-dir: modules/
+           git-push: true
            output-file: README.md
            output-method: replace
           
