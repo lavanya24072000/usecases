@@ -1,11 +1,11 @@
 variable "source_bucket_name" {
-  Default = "lavanya-source-bucket"
+  default = "lavanya-source-bucket"
 }
 
 variable "destination_bucket_name" {
-  Default = "lavanya-destination-bucket"
+  default = "lavanya-destination-bucket"
 }
 
 variable "sns_topic_name" {
-  Default = "image-resize-topic"
+  default = "image-resize-topic"
 }
