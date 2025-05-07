@@ -38,18 +38,18 @@ jobs:
       - name: Terraform plan (Create EC2)
         run: terraform plan
         
-      # - name: Install tflint
-      #   run: |
-      #        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+      - name: Install tflint
+        run: |
+             curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
 
-      # - name: Run tflint with custom config
+      - name: Run tflint with custom config
+        run: |
+          echo "Using custom rules from .tflint.hcl"
+          tflint --config=./.tflint.hcl
+        continue-on-error: true
+      # - name: Install terraform-docs
       #   run: |
-      #     echo "Using custom rules from .tflint.hcl"
-      #     tflint --config=./.tflint.hcl
-      #   continue-on-error: true
-      # # - name: Install terraform-docs
-      # #   run: |
-      # #       curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh
+      #       curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh
  
       # # - name: Generate Terraform docs
       # #   run: terraform-docs markdown . > README.md
@@ -63,12 +63,12 @@ jobs:
       # #        git diff --cached --quiet || git commit -m "Update Terraform docs"
       # #        git push
              
-      # - name: Generate terraform docs
-      #   uses: terraform-docs/gh-actions@v1.0.0
-      #   with:
-      #      working-dir: ./modules/vpc
-      #      output-file: README.md
-      #      output-method: replace
+      - name: Generate terraform docs
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+           working-dir: ./modules/vpc
+           output-file: README.md
+           output-method: replace
           
       - name: Terraform Apply (Create EC2)
         run: terraform apply -auto-approve
