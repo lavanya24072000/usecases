@@ -1,7 +1,7 @@
-name: Provision Infra using Terraform via EC2 
+name: Provision Infra using Terraform via EC2
 on:
- pull_request:
- push:
+  pull_request:
+  push:
   
 permissions:
   id-token: write
@@ -14,7 +14,9 @@ jobs:
  
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
+        with:
+          ref: users  # Ensure the default branch is checked out
  
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -27,57 +29,23 @@ jobs:
         with:
           terraform_version: 1.10.5
           
- 
       - name: Generate terraform docs
-        uses: terraform-docs/gh-actions@users
+        uses: terraform-docs/gh-actions@main
         with:           
           working-dir: .
-          git-push: true
-          output-file: README.md
-          output-method: inject
-          config-file: disabled
-          atlantis-file: disabled
-          find-dir: disabled
-          recursive: false
-          recursive-path: modules
-          output-format: markdown table
-    
-
- 
-      # - name: Commit docs
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |S
-
-      #     BRANCH_NAME="users"
-         
-      #     # Configure Git user
-      #      git config --global user.name "github-actions[bot]"
-      #      git config --global user.email "github-actions[bot]@users.noreply.github.com"
- 
-      #     # Checkout to the branch
-      #     git checkout "$BRANCH_NAME"
-          
-      #     # Add README file
-      #     git add modules/**/README.md
-          
-      #     # Commit changes
-      #     git commit -m "📘 terraform-docs: automated update" || echo "No changes to commit"
-          
-      #     # Push changes to the correct branch
-      #     git push https://github-actions:${{ secrets.GITHUB }}@github.com/${{ github.repository }} HEAD:"$BRANCH_NAME"
-             
-      # # - name: Generate terraform docs
-      # #   uses: terraform-docs/gh-actions@v1.0.0
-      # #   with:
-      # #      working-dir: modules/
-      # #      git-push: true
-      # #      output-file: README.md
-      # #      output-method: replace
-          
-      # - name: Terraform Apply (Create EC2)
-      #   run: terraform apply -auto-approve
-        
-      # - name: Terraform destroy (Create EC2)
-      #   run: terraform destroy -auto-approve
-        
+          git-push: true
+          output-file: README.md
+          output-method: inject
+          config-file: disabled
+          atlantis-file: disabled
+          find-dir: disabled
+          recursive: false
+          recursive-path: modules
+          output-format: markdown table
+          template: |
+            <!-- BEGIN_TF_DOCS -->
+            {{ .Content }}
+            <!-- END_TF_DOCS -->
+          indention: 2
+          git-push-sign-off: false
+          fail-on-diff: false
