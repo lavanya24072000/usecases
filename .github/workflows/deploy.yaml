@@ -43,9 +43,11 @@ jobs:
           recursive-path: modules
           output-format: markdown table
           template: |
-           <!-- BEGIN_TF_DOCS -->\n{{ .Content }}\n<!-- END_TF_DOCS -->
+            <!-- BEGIN_TF_DOCS -->
+            {{ .Content }}
+            <!-- END_TF_DOCS -->
           indention: 2
-          git-commit-message: terraform-docs:"automated action"
+          git-commit-message: terraform-docs:automated action
           git-push-sign-off: false
           fail-on-diff: false
         env:
