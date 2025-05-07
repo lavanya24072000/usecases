@@ -1,7 +1,4 @@
 
-            --output-template "<!-- BEGIN_TF_DOCS -->\n{{ .Content }}\n<!-- END_TF_DOCS -->"
-        env:
-          WORKING_DIR: .
 name: Provision Infra using Terraform via EC2
 on:
   pull_request:
