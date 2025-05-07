@@ -1,8 +1,8 @@
 
-Resource "aws_sns_topic" "image_topic" {
-  Name = var.sns_topic_name
+resource "aws_sns_topic" "image_topic" {
+  name = var.sns_topic_name
 }
 
-Output "sns_topic_arn" {
-  Value = aws_sns_topic.image_topic.arn
+output "sns_topic_arn" {
+  value = aws_sns_topic.image_topic.arn
 }
