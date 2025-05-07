@@ -1,6 +1,6 @@
 name: Provision Infra using Terraform via EC2 
 on:
- pull_request:
+ push:
 permissions:
   id-token: write
   contents: read
@@ -63,11 +63,12 @@ jobs:
  
       - name: Commit docs
         run: |
-             git config user.name "GitHub Actions"
-             git config user.email "actions@github.com"
-             git add README.md
-             git diff --cached --quiet || git commit -m "Update Terraform docs"
-             git push
+              BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+              git config --global user.name "github-actions[bot]"
+              git config --global user.email "github-actions[bot]@users.noreply.github.com"
+              git checkout "$BRANCH_NAME"
+              git commit -m "terraform-docs: automated update" || echo "No changes to commit"
+              git push origin HEAD:"$BRANCH_NAME"
              
       # - name: Generate terraform docs
       #   uses: terraform-docs/gh-actions@v1.0.0
