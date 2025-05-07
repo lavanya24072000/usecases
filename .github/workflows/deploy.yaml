@@ -1,58 +1,26 @@
-name: Provision Infra using Terraform via EC2
+name: Terraform Docs
+ 
 on:
-  pull_request:
   push:
-  
-permissions:
-  id-token: write
-  contents: read
-
+    branches:
+      - main
+  pull_request:
+ 
 jobs:
-  provision:
-    name: Terraform Infra via EC2
+  generate-docs:
     runs-on: ubuntu-latest
  
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          ref: users  # Ensure the default branch is checked out
+      - name: Checkout repository
+        uses: actions/checkout@v3
  
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Generate Terraform Docs
+        uses: docker://quay.io/terraform-docs/gh-actions:1.4.1
         with:
-          role-to-assume: ${{ secrets.ROLE }}
-          aws-region: us-east-2
- 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.10.5
-          
-      - name: Generate terraform docs
-        uses: terraform-docs/gh-actions@main
-        with:           
-          working-dir: .
-          git-push: true
-          output-file: README.md
-          output-method: inject
-          config-file: disabled
-          atlantis-file: disabled
-          find-dir: disabled
-          recursive: false
-          recursive-path: modules
-          output-format: markdown table
-          template: |
-            <!-- BEGIN_TF_DOCS -->
-            {{ .Content }}
-            <!-- END_TF_DOCS -->
-          indention: 2
-          git-commit-message: terraform-docs:automated action
-          git-push-sign-off: false
-          fail-on-diff: false
+          args: |
+            markdown table \
+            --output-mode inject \
+            --output-file README.md \
+            --output-template "<!-- BEGIN_TF_DOCS -->\n{{ .Content }}\n<!-- END_TF_DOCS -->"
         env:
-          AWS_DEFAULT_REGION: us-east-2
-          AWS_REGION: us-east-2
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          WORKING_DIR: .
