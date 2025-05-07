@@ -1,26 +1,11 @@
-variable "ami_id" {
-  description = "AMI ID for EC2 instance"
-  type        = string
+Variable “source_bucket_name” {
+  Default = “lavanya-source-bucket”
 }
 
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
+Variable “destination_bucket_name” {
+  Default = “lavanya-destination-bucket”
 }
 
-
-variable "db_username" {
-  description = "Database username"
-  type        = string
-}
-
-variable "db_password" {
-  description = "Database password"
-  type        = string
-  sensitive   = true
-}
-
-variable "db_name" {
-  description = "Database name"
-  type        = string
+Variable “sns_topic_name” {
+  Default = “image-resize-topic”
 }

@@ -1,36 +1,25 @@
-provider "aws" {
-  region = "us-east-2"
+Module “s3” {
+  Source                = “./modules/s3”
+  Source_bucket_name    = var.source_bucket_name
+  Destination_bucket_name = var.destination_bucket_name
 }
 
-# Create a VPC
-module "vpc" {
-  source = "./modules/vpc"
+Module “sns” {
+  Source          = “./modules/sns”
+  Sns_topic_name  = var.sns_topic_name
 }
 
-# Create web servers in public subnets
-module "web_server_1" {
-  source             = "./modules/web_server"
-  ami_id             = var.ami_id  # Replace with your AMI
-  instance_type      = var.instance_type
-  public_subnet_id   = module.vpc.public_subnet_1_id
-  web_sg_id          = module.vpc.web_security_group_id
+Module “iam” {
+  Source                 = “./modules/iam”
+  Source_bucket_arn      = module.s3.source_bucket_arn
+  Destination_bucket_arn = module.s3.destination_bucket_arn
+  Sns_topic_arn          = module.sns.sns_topic_arn
 }
 
-module "web_server_2" {
-  source             = "./modules/web_server"
-  ami_id             = var.ami_id  # Replace with your AMI
-  instance_type      = var.instance_type
-  public_subnet_id   = module.vpc.public_subnet_2_id
-  web_sg_id          = module.vpc.web_security_group_id
-}
-
-# Create RDS MySQL instance in private subnets
-module "rds" {
-  source            = "./modules/rds"
-  db_username       = var.db_username
-  db_password       = var.db_password
-  db_name           = var.db_name
-  private_subnet_id_1= module.vpc.private_subnet_1_id
-  private_subnet_id_2= module.vpc.private_subnet_2_id
-  
+Module “lambda” {
+  Source                = “./modules/lambda”
+  Lambda_role_arn       = module.iam.lambda_role_arn
+  Source_bucket         = var.source_bucket_name
+  Destination_bucket    = var.destination_bucket_name
+  Sns_topic_arn         = module.sns.sns_topic_arn
 }

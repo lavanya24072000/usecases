@@ -18,7 +18,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.ROLE }}
-          aws-region: us-east-2
+          aws-region: eu-west-1
  
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -29,14 +29,14 @@ jobs:
       #   run: terraform fmt
         
 
-      # - name: Terraform init (Create EC2)
-      #   run: terraform init
+      - name: Terraform init (Create EC2)
+        run: terraform init
         
       # - name: Terraform validate 
       #   run: terraform validate 
 
-      # # - name: Terraform plan (Create EC2)
-      # #   run: terraform plan
+      - name: Terraform plan (Create EC2)
+        run: terraform plan
         
       # # - name: Install tflint
       # #   run: |
@@ -53,47 +53,45 @@ jobs:
  
       # - name: Generate Terraform docs
       #   run: terraform-docs markdown . > README.md
-      - name: Generate terraform docs
-        uses: terraform-docs/gh-actions@v1.0.0
-        with:
-           working-dir: modules/
-           git-push: false
-           output-file: README.md
-           output-method: replace
- 
-      - name: Commit docs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          BRANCH_NAME="user-1"
-         
-          # Configure Git user
-           git config --global user.name "github-actions[bot]"
-           git config --global user.email "github-actions[bot]@users.noreply.github.com"
- 
-          # Checkout to the branch
-          git checkout "$BRANCH_NAME"
-          
-          # Add README file
-          git add modules/**/README.md
-          
-          # Commit changes
-          git commit -m "📘 terraform-docs: automated update" || echo "No changes to commit"
-          
-          # Push changes to the correct branch
-          git push https://github-actions:${{ secrets.GITHUB }}@github.com/${{ github.repository }} HEAD:"$BRANCH_NAME"
-             
       # - name: Generate terraform docs
       #   uses: terraform-docs/gh-actions@v1.0.0
       #   with:
       #      working-dir: modules/
-      #      git-push: true
+      #      git-push: false
       #      output-file: README.md
       #      output-method: replace
+ 
+      # - name: Commit docs
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     BRANCH_NAME="user-1"
+         
+      #     # Configure Git user
+      #      git config --global user.name "github-actions[bot]"
+      #      git config --global user.email "github-actions[bot]@users.noreply.github.com"
+ 
+      #     # Checkout to the branch
+      #     git checkout "$BRANCH_NAME"
+          
+      #     # Add README file
+      #     git add modules/**/README.md
+          
+      #     # Commit changes
+      #     git commit -m "📘 terraform-docs: automated update" || echo "No changes to commit"
+          
+      #     # Push changes to the correct branch
+      #     git push https://github-actions:${{ secrets.GITHUB }}@github.com/${{ github.repository }} HEAD:"$BRANCH_NAME"
+             
+      # # - name: Generate terraform docs
+      # #   uses: terraform-docs/gh-actions@v1.0.0
+      # #   with:
+      # #      working-dir: modules/
+      # #      git-push: true
+      # #      output-file: README.md
+      # #      output-method: replace
           
       - name: Terraform Apply (Create EC2)
         run: terraform apply -auto-approve
         
-      - name: Terraform destroy (Create EC2)
-        run: terraform destroy -auto-approve
-        
+      

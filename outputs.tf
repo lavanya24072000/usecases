@@ -1,11 +1,9 @@
-output "web_server_1_public_ip" {
-  value = module.web_server_1.public_ip
+Output “source_bucket” {
+  Value = module.s3.source_bucket_name
 }
 
-output "web_server_2_public_ip" {
-  value = module.web_server_2.public_ip
+Output “lambda_function_name” {
+  Value = module.lambda.lambda_function_name
 }
 
-output "rds_endpoint" {
-  value = module.rds.endpoint
-}
+
