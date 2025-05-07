@@ -1,6 +1,6 @@
 name: Provision Infra using Terraform via EC2 
 on:
- pull_request:
+ push:
 permissions:
   id-token: write
   contents: read
