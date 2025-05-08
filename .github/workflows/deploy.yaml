@@ -37,7 +37,7 @@ jobs:
             
       - name: Install  dependencies and create ZIP
         run: |
-          cd file/js
+          cd /file/js
           npm install 
           zip -r ../../file/js/image_resizer.zip .
  
