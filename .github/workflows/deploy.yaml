@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-        with:
-          ref: users  # Ensure the default branch is checked out
  
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -37,6 +35,7 @@ jobs:
       
       - name: Install  dependencies and create ZIP
         run: |
+           ls 
            cd file/js
            npm install 
            zip -r ../../files/js/image_resizer.zip .
