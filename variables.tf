@@ -14,12 +14,3 @@ variable "source_bucket_arn" {
   type        = string
 }
 
-variable "destination_bucket_arn" {
-  description = "The ARN of the destination S3 bucket"
-  type        = string
-}
-
-variable "sns_topic_arn" {
-  description = "The ARN of the SNS topic"
-  type        = string
-}
