@@ -1,10 +1,11 @@
 
-package terraform.deny
+package terraform.module
 
-deny[msg] {
-  some i
-  resource := input.resource_changes[i]
-  resource.type == "aws_s3_bucket"
-  resource.change.after.acl == "public-read"
-  msg := "Public S3 buckets are not allowed"
+deny contains msg if {
+    some r
+    resource_type := resources[r].type
+    resource_type == "aws_s3_bucket"
+    public_access := resources[r].values.public_access_block_configuration
+    public_access == null or public_access.block_public_acls == false or public_access.block_public_policy == false
+    msg := sprintf("S3 bucket should not have public access enabled. Resource in violation: %v", [r.address])
 }
