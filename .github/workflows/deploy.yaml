@@ -34,14 +34,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
            node-version: 18   
-            
+      
       - name: Install  dependencies and create ZIP
         run: |
-             cd /file/js
-             npm install
-             zip -r /file/js/image_resizer.zip 
-
+           cd /file/js
+           npm install 
+           zip -r /files/js/image_resizer.zip .
  
+
       - name: Terraform Init
         run: terraform init
  
