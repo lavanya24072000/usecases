@@ -23,7 +23,7 @@ module "iam" {
 module "lambda" {
   source                = "./modules/lambda"
   lambda_role_arn       = module.iam.lambda_role_arn
-  source_bucket         = var.source_bucket_name
-  destination_bucket    = var.destination_bucket_name
+  source_bucket         = module.source_bucket_name
+  destination_bucket    = module.destination_bucket_name
   sns_topic_arn         = module.sns.sns_topic_arn
 }
