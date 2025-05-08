@@ -60,7 +60,7 @@ jobs:
  
       - name: Run OPA Policy Check
         run: |
-           opa run -s first.rego
+           # opa run -s first.rego
            conftest test --input tfplan.json --policy first.rego
 
 
