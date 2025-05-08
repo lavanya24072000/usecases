@@ -1,13 +1,7 @@
-
-# Rule to check if RDS instance has encryption enabled
+package main
  
 deny[msg] {
- 
-input.resource.type == "aws_rds_instance"
- 
-not input.resource.encrypted
- 
-msg = "RDS instance is not encrypted."
- 
+  input.resource_changes[_].type == "aws_s3_bucket"
+  input.resource_changes[_].change.after.acl == "public-read"
+  msg := "S3 bucket is public!"
 }
- 
