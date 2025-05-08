@@ -1,26 +1,20 @@
-variable "ami_id" {
-  description = "AMI ID for EC2 instance-01"
-  type        = string
+variable "source_bucket_name" { default = "source-bucket-image" }
+variable "dest_bucket_name"   { default = "dest-bucket-image" }
+variable "sns_topic_name"     { default = "image-topic" }
+variable "lambda_function_name" { default = "lambda-image" }
+variable "resize_width" { default = 600 }
+ 
+variable "tags" {
+  type = map(string)
+  default = {
+    Project   = "ImageProcessor"
+    Owner     = "prodTeam"
+    ManagedBy = "Terraform"
+  }
 }
-
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
+variable "email" { 
+  default = "elavanya@hcltech.com"
 }
-
-
-variable "db_username" {
-  description = "Database username"
-  type        = string
-}
-
-variable "db_password" {
-  description = "Database password"
-  type        = string
-  sensitive   = true
-}
-
-variable "db_name" {
-  description = "Database name"
-  type        = string
+variable "lambda_role" { 
+  default = "lambda_role_s3_image"
 }
