@@ -38,7 +38,7 @@ jobs:
            ls 
            cd file/js
            npm install 
-           zip -r ../../files/js/image_resizer.zip .
+           zip -r ../file/js/image_resizer.zip .
  
 
       - name: Terraform Init
