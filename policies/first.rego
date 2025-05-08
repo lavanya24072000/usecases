@@ -1,7 +1,9 @@
 package main
  
 deny[msg] {
-  input.resource_changes[_].type == "aws_s3_bucket"
-  input.resource_changes[_].change.after.acl == "public-read"
+  some i
+  resource := input.resource_changes[i]
+  resource.type == "aws_s3_bucket"
+  resource.change.after.acl == "public-read"
   msg := "S3 bucket is public!"
 }
