@@ -1,5 +1,5 @@
-variable "source_bucket_name" { default = "source-bucket-image" }
-variable "dest_bucket_name"   { default = "dest-bucket-image" }
+variable "source_bucket_name" { default = "source-bucket-image-lavanya" }
+variable "dest_bucket_name"   { default = "dest-bucket-image-lavanya" }
 variable "sns_topic_name"     { default = "image-topic" }
 variable "lambda_function_name" { default = "lambda-image" }
 variable "resize_width" { default = 600 }
