@@ -31,20 +31,16 @@ jobs:
         with:
           terraform_version: 1.10.5
     
-      - name: Set up Node js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-           node-version: 18   
-      
-     
+            node-version: 18
+
       - name: Zip start_lambda.py
-        run: 
-           zip start_lambda.zip start_lambda.py
+        run: zip start_lambda.zip start_lambda.py
 
-      - name: Zip stop_lambda.py
-        run: 
-          zip stop_lambda.zip stop_lambda.py
-
+      - name: Zip stop_lambda.py
+        run: zip stop_lambda.zip stop_lambda.py
       # - name: Render terraform docs and push changes back to PR
       #   uses: terraform-docs/gh-actions@main
       #   with:
