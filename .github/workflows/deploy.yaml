@@ -35,12 +35,11 @@ jobs:
         with:
            node-version: 18   
       
-      # - name: Install  dependencies and create ZIP
-      #   run: |
-      #      ls 
-      #      cd file/js
-      #      npm install 
-      #      zip -r ../../file/js/image_resizer.zip .
+      - name: Install  dependencies and create ZIP
+        run: |
+           ls 
+           zip -r start_lambda.zip start_lambda.py
+           zip -r stop_lambda.zip stop_lambda.py
  
       # - name: Render terraform docs and push changes back to PR
       #   uses: terraform-docs/gh-actions@main
