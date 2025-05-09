@@ -1,0 +1,13 @@
+{
+    "name": "image-resizer",
+    "version": "1.0.0",
+    "description": "Lambda function for resizing images using Sharp",
+    "main": "index.js",
+    "dependencies": {
+      "sharp": "^0.32.1",  
+      "aws-sdk": "^2.1452.0"  
+    },
+    "scripts": {
+  "build": "zip -r ../image_resizer ."
+    }
+  }

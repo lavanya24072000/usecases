@@ -1,36 +1,33 @@
-provider "aws" {
-  region = "us-east-2"
+module "s3" {
+  source              = "./modules/s3"
+  source_bucket_name  = var.source_bucket_name
+  dest_bucket_name    = var.dest_bucket_name
+  tags                = var.tags
+ 
 }
-
-# Create a VPC
-module "vpc" {
-  source = "./modules/vpc"
+ 
+module "sns" {
+  source           = "./modules/sns"
+  topic_name       = var.sns_topic_name
+  tags             = var.tags
+  email            = var.email
 }
-
-# Create web servers in public subnets
-module "web_server_1" {
-  source             = "./modules/web_server"
-  ami_id             = var.ami_id  # Replace with your AMI
-  instance_type      = var.instance_type
-  public_subnet_id   = module.vpc.public_subnet_1_id
-  web_sg_id          = module.vpc.web_security_group_id
+ 
+module "iam" {
+  source            = "./modules/iam"
+  source_bucket_arn = module.s3.source_bucket_arn
+  dest_bucket_arn   = module.s3.dest_bucket_arn
+  sns_topic_arn     = module.sns.topic_arn
+  lambda_role         = var.lambda_role
 }
-
-module "web_server_2" {
-  source             = "./modules/web_server"
-  ami_id             = var.ami_id  # Replace with your AMI
-  instance_type      = var.instance_type
-  public_subnet_id   = module.vpc.public_subnet_2_id
-  web_sg_id          = module.vpc.web_security_group_id
-}
-
-# Create RDS MySQL instance in private subnets
-module "rds" {
-  source            = "./modules/rds"
-  db_username       = var.db_username
-  db_password       = var.db_password
-  db_name           = var.db_name
-  private_subnet_id_1= module.vpc.private_subnet_1_id
-  private_subnet_id_2= module.vpc.private_subnet_2_id
-  
+ 
+module "lambda" {
+  source             = "./modules/lambda"
+  function_name      = var.lambda_function_name
+  role_arn           = module.iam.lambda_role_arn
+  source_bucket_name = var.source_bucket_name
+  dest_bucket_name   = var.dest_bucket_name
+  sns_topic_arn      = module.sns.topic_arn
+  resize_width       = var.resize_width
+  tags               = var.tags
 }
