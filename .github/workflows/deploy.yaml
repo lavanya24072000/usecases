@@ -38,11 +38,11 @@ jobs:
       
      
       - name: Zip start_lambda.py
-        run: |
-          zip start_lambda.zip start_lambda.py
+        run: 
+           zip start_lambda.zip start_lambda.py
 
       - name: Zip stop_lambda.py
-        run: |
+        run: 
           zip stop_lambda.zip stop_lambda.py
 
       # - name: Render terraform docs and push changes back to PR
