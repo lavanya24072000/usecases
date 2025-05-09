@@ -4,7 +4,7 @@ provider "aws" {
 
 module "iam" {
   source           = "./modules/iam_role"
-  lambda_role_name = "ec2-scheduler-role"
+  lambda_role_name = "ec2-fghj-role"
 }
 
 module "start_lambda" {
@@ -32,13 +32,13 @@ module "stop_lambda" {
 module "start_schedule" {
   source              = "./modules/cloudwatch_event"
   rule_name           = "StartEC2InstancesRule"
-  schedule_expr       = "cron(0 8 * * ? *)"
+  schedule_expr       = = "cron(0 18 ? * MON-FRI *)" 
   lambda_function_arn = module.iam.lambda_role_arn
 }
 
 module "stop_schedule" {
   source              = "./modules/cloudwatch_event"
   rule_name           = "StopEC2InstancesRule"
-  schedule_expr       = "cron(5 ? * * ? *)"
+  schedule_expr       = = "cron(0 18 ? * MON-FRI *)" 
   lambda_function_arn = module.iam.lambda_role_arn
 }
