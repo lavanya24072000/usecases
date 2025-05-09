@@ -10,7 +10,7 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   role             = var.role_arn
   handler          = var.handler_name
-  runtime          = "python3.9"
+  runtime          = "python3.11"
 
   environment {
     variables = var.environment_vars
