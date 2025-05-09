@@ -32,13 +32,13 @@ module "stop_lambda" {
 module "start_schedule" {
   source              = "./modules/cloudwatch_event"
   rule_name           = "StartEC2InstancesRule"
-  schedule_expr       = = "cron(0 18 ? * MON-FRI *)" 
+  schedule_expr       = "cron(0 18 ? * MON-FRI *)" 
   lambda_function_arn = module.iam.lambda_role_arn
 }
 
 module "stop_schedule" {
   source              = "./modules/cloudwatch_event"
   rule_name           = "StopEC2InstancesRule"
-  schedule_expr       = = "cron(0 18 ? * MON-FRI *)" 
+  schedule_expr       =  "cron(0 18 ? * MON-FRI *)" 
   lambda_function_arn = module.iam.lambda_role_arn
 }
