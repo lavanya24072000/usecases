@@ -1,33 +1,44 @@
-module "s3" {
-  source              = "./modules/s3"
-  source_bucket_name  = var.source_bucket_name
-  dest_bucket_name    = var.dest_bucket_name
-  tags                = var.tags
- 
+provider "aws" {
+  region = "eu-west-1"
 }
- 
-module "sns" {
-  source           = "./modules/sns"
-  topic_name       = var.sns_topic_name
-  tags             = var.tags
-  email            = var.email
-}
- 
+
 module "iam" {
-  source            = "./modules/iam"
-  source_bucket_arn = module.s3.source_bucket_arn
-  dest_bucket_arn   = module.s3.dest_bucket_arn
-  sns_topic_arn     = module.sns.topic_arn
-  lambda_role         = var.lambda_role
+  source           = "./modules/iam_role"
+  lambda_role_name = "ec2-scheduler-role"
 }
- 
-module "lambda" {
-  source             = "./modules/lambda"
-  function_name      = var.lambda_function_name
-  role_arn           = module.iam.lambda_role_arn
-  source_bucket_name = var.source_bucket_name
-  dest_bucket_name   = var.dest_bucket_name
-  sns_topic_arn      = module.sns.topic_arn
-  resize_width       = var.resize_width
-  tags               = var.tags
+
+module "start_lambda" {
+  source           = "./modules/lambda_function"
+  function_name    = "StartEC2Instances"
+  handler_file     = "${path.module}/start_lambda.py"
+  handler_name     = "start_lambda.lambda_handler"
+  role_arn         = module.iam.lambda_role_arn
+  environment_vars = {
+    INSTANCE_IDS = "i-0169a79a8eb7421ef"
+  }
+}
+
+module "stop_lambda" {
+  source           = "./modules/lambda_function"
+  function_name    = "StopEC2Instances"
+  handler_file     = "${path.module}/stop_lambda.py"
+  handler_name     = "stop_lambda.lambda_handler"
+  role_arn         = module.iam.lambda_role_arn
+  environment_vars = {
+    INSTANCE_IDS = "i-0169a79a8eb7421ef"
+  }
+}
+
+module "start_schedule" {
+  source              = "./modules/cloudwatch_event"
+  rule_name           = "StartEC2InstancesRule"
+  schedule_expr       = "cron(0 8 * * ? *)"
+  lambda_function_arn = module.start_lambda.lambda_arn
+}
+
+module "stop_schedule" {
+  source              = "./modules/cloudwatch_event"
+  rule_name           = "StopEC2InstancesRule"
+  schedule_expr       = "cron(5 ? * * ? *)"
+  lambda_function_arn = module.stop_lambda.lambda_arn
 }
