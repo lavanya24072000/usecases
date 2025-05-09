@@ -3,12 +3,12 @@ import os
  
 def lambda_handler(event, context):
     ec2 = boto3.client('ec2')
-    instance_id = os.environ.get('INSTANCE_ID')
+    instance_id = os.environ.get('INSTANCE_IDS')
  
     if not instance_id:
         return {
             'statusCode': 400,
-            'body': 'Environment variable INSTANCE_ID is not set'
+            'body': 'Environment variable INSTANCE_IDS is not set'
         }
  
     try:
@@ -22,5 +22,6 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': f'Error stopping instance: {str(e)}'
         }
+ 
  
  
