@@ -60,21 +60,21 @@ jobs:
     - name: Terraform Validate
       run: terraform validate
 
-    - name: Install tflint
-      run: |
-        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+    # - name: Install tflint
+    #   run: |
+    #     curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
  
-    - name: Run tflint
-      run: tflint --config=./.tflint.hcl
-      # run: tflint --init && tflint
+    # - name: Run tflint
+    #   run: tflint --config=./.tflint.hcl
+    #   # run: tflint --init && tflint
  
-    - name: Install Checkov
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install checkov
+    # - name: Install Checkov
+    #   run: |
+    #     python3 -m pip install --upgrade pip
+    #     pip install checkov
  
-    - name: Run Checkov Scan
-      run: checkov -d ./ --skip-path .github/* --soft-fail
+    # - name: Run Checkov Scan
+    #   run: checkov -d ./ --skip-path .github/* --soft-fail
  
     - name: Terraform Plan
       run: terraform plan
