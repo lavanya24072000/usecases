@@ -83,9 +83,8 @@ jobs:
     
       run: terraform apply -auto-approve 
 
-    # - name: Terraform destroy (manual)
-    #   working-directory: ./use-case-07
-    #   run: terraform destroy -auto-approve 
+    - name: Terraform destroy (manual)
+      run: terraform destroy -auto-approve 
 
     - name: Terraform logs
       uses: actions/upload-artifact@v4
