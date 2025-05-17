@@ -1,3 +1,3 @@
-output "lambda_function_name" {
-  value = module.lambda.function_name
+output "api_url" {
+    value = module.apigateway.api_endpoint
 }

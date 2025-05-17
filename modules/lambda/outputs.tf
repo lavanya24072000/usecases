@@ -1,3 +1,3 @@
-output "function_name" {
-  value = aws_lambda_function.image_resizer.function_name
-}
+variable "function_name" {}
+variable "image_uri" {}
+variable "role_arn" {}

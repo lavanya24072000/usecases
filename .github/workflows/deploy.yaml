@@ -1,117 +1,94 @@
-
-name: Provision Infra using Terraform via EC2
+name: Lambda usecase - 07
 on:
-  pull_request:
-
-  
-permissions:
-  id-token: write
-  contents: write
-
+  push:
+ 
 jobs:
-  provision:
-    name: Terraform Infra via EC2
+  terraform:
+    name: Use-case-07
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+ 
+    env:
+      TF_VERSION: '1.10'
+      AWS_REGION: eu-west-1
+      ROLE_TO_ASSUME: arn:aws:iam::144317819575:role/odic
+      TF_LOG: DEBUG
+      TF_LOG_PATH: log.txt
  
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
  
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.ROLE }}
-          aws-region: eu-west-1
+    # - name: Render terraform docs and push changes back to PR
+    #   uses: terraform-docs/gh-actions@main
+    #   with:
+    #     working-dir: ./use-case-05
+    #     output-file: README.md
+    #     output-method: inject
+    #     git-push: "true"
  
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.10.5
-    
-      - name: Set up Node js
-        uses: actions/setup-node@v3
-        with:
-           node-version: 18   
-      
-      - name: Install  dependencies and create ZIP
-        run: |
-           ls 
-           cd file/js
-           npm install 
-           zip -r ../../file/js/image_resizer.zip .
- 
-      - name: Render terraform docs and push changes back to PR
-        uses: terraform-docs/gh-actions@main
-        with:
-          working-dir: ./modules
-          output-file: README.md
-          output-method: inject
-          git-push: "true"
-          
-      - name: Terraform format
-        run: terraform fmt
-        
-         
-      - name: Terraform Init
-        run: terraform init
+    - name: Configure AWS credentials via OIDC
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+        aws-region: ${{ env.AWS_REGION }}
 
-      - name: Terraform test
-        run: |
-         terraform test
-        continue-on-error: true
-        
-         
-      - name: Install Checkov
-        run: |
-          python3 -m pip install --upgrade pip
-          pip install checkov
+    # - name: Download terraform.tfvars from S3
+    #   run: aws s3 cp s3://pavithra-bucket001/vars.tfvars ./Use-case-03/vars.tfvars
  
-      - name: Run Checkov Scan
-        run: checkov -d ./ --skip-path .github/* --soft-fail
- 
-      - name: Terraform Validate
-        run: terraform validate
-
-      - name: Install tflint
-        run: |
-             curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-
-      - name: Run tflint with custom config
-        run: |
-          echo "Using custom rules from .tflint.hcl"
-          tflint --config=./.tflint.hcl
-        continue-on-error: true
-        
- 
-      - name: Terraform Plan 
-        run: |
-           terraform plan -out=tfplan.binary
-           terraform show -json tfplan.binary >tfplan.json
-           # opa eval --input tfplan.json --data policies/ 'data.terraform.deny.deny'
-    
-            
-      - name: Install Conftest
-        run: |
-            wget https://github.com/open-policy-agent/conftest/releases/download/v0.51.0/conftest_0.51.0_Linux_x86_64.tar.gz
-            tar xzf conftest_0.51.0_Linux_x86_64.tar.gz
-            sudo mv conftest /usr/local/bin/
-            
-      - name: Run OPA Policy Check
-        run: |
-           # opa run -s first.rego
-           conftest test tfplan.json --policy policies/first.rego
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
 
 
+    - name: Terraform Format Check
+      run: terraform fmt -recursive
  
-      - name: Terraform Apply (manual)
-        run: terraform apply -auto-approve 
-        
-      - name: Terraform destroy (manual)
-        run: terraform destroy -auto-approve 
-        
-  
-      #     git-push-sign-off: false
-      #     fail-on-diff: false
-      
+ 
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform test
+      run: terraform test -verbose
+      continue-on-error: true
+ 
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Install tflint
+      run: |
+        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+ 
+    - name: Run tflint
+      run: tflint --config=./.tflint.hcl
+      # run: tflint --init && tflint
+ 
+    - name: Install Checkov
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install checkov
+ 
+    - name: Run Checkov Scan
+      run: checkov -d ./ --skip-path .github/* --soft-fail
+ 
+    - name: Terraform Plan
+      run: terraform plan
+
+    - name: Terraform Apply (manual)
+      working-directory: ./use-case-07
+      run: terraform apply -auto-approve 
+
+    - name: Terraform destroy (manual)
+      working-directory: ./use-case-07
+      run: terraform destroy -auto-approve 
+
+    - name: Terraform logs
+      uses: actions/upload-artifact@v4
+      with:
+        name: Terraform-logs
+        path: ./Use-case-06/log.txt
