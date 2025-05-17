@@ -7,4 +7,5 @@ output "invoke_arn" {
 }
 
 output "arn" {
-   
+    value = aws_lambda_function.this.arn
+}
