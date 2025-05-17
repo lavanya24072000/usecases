@@ -7,7 +7,6 @@ env:
   AWS_REGION: eu-west-1
   ROLE_TO_ASSUME: arn:aws:iam::144317819575:role/odic
   ECR_REPO: first
-
      
 jobs:
   build-and-deploy:
