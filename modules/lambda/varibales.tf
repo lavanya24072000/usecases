@@ -1,5 +1,3 @@
-variable "source_bucket_name" {}
-variable "dest_bucket_name" {}
-variable "tags" {
-    type = map(string)
-}
+variable "function_name" {}
+variable "image_uri" {}
+variable "role_arn" {}
