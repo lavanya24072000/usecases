@@ -1,6 +1,6 @@
 name: Lambda usecase - 07
 on:
-  workflow_dispatch:
+ push:
  
 jobs:
   terraform:
