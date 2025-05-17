@@ -1,7 +1,7 @@
 name: Docker image
  
 on:
-  workflow_dispatch:
+  push:
  
 env:
   AWS_REGION: eu-west-1
