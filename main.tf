@@ -62,26 +62,17 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  cidr_blocks = ["0.0.0.0/0"]
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "${var.environment}-alb-sg"
-  }
-}
 
-# ECR Repository
-resource "aws_ecr_repository" "flask_app" {
-  name = "flask-app"
+-
 
-  image_scanning_configuration {
-    scan_on_push = true
-  }
 
-  tags = {
-    Name = "flask-app"
-  }
-}
 
 # IAM Role for EKS Cluster
 resource "aws_iam_role" "eks_role" {
