@@ -1,20 +1,26 @@
-variable "source_bucket_name" { default = "source-bucket-image-lavanya" }
-variable "dest_bucket_name"   { default = "dest-bucket-image-lavanya" }
-variable "sns_topic_name"     { default = "image-topic" }
-variable "lambda_function_name" { default = "lambda-image" }
-variable "resize_width" { default = 600 }
- 
-variable "tags" {
-  type = map(string)
-  default = {
-    Project   = "ImageProcessor"
-    Owner     = "prodTeam"
-    ManagedBy = "Terraform"
-  }
+variable "region" {
+  default = "us-west-2"
 }
-variable "email" { 
-  default = "elavanya@hcltech.com"
+
+variable "environment" {
+  default = "dev"
 }
-variable "lambda_role" { 
-  default = "lambda_role_s3_image"
+
+variable "vpc_cidr" {
+  default = "10.0.0.0/16"
+}
+
+variable "public_subnet_cidrs" {
+  type    = list(string)
+  default = ["10.0.1.0/24", "10.0.2.0/24"]
+}
+
+variable "private_subnet_cidrs" {
+  type    = list(string)
+  default = ["10.0.3.0/24", "10.0.4.0/24"]
+}
+
+variable "azs" {
+  type    = list(string)
+  default = ["us-west-2a", "us-west-2b"]
 }

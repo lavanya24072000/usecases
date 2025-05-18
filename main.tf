@@ -1,33 +1,121 @@
-module "s3" {
-  source              = "./modules/s3"
-  source_bucket_name  = var.source_bucket_name
-  dest_bucket_name    = var.dest_bucket_name
-  tags                = var.tags
- 
+provider "aws" {
+  region = var.region
 }
- 
-module "sns" {
-  source           = "./modules/sns"
-  topic_name       = var.sns_topic_name
-  tags             = var.tags
-  email            = var.email
+
+# VPC
+resource "aws_vpc" "main" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  tags = { Name = "${var.environment}-vpc" }
 }
- 
-module "iam" {
-  source            = "./modules/iam"
-  source_bucket_arn = module.s3.source_bucket_arn
-  dest_bucket_arn   = module.s3.dest_bucket_arn
-  sns_topic_arn     = module.sns.topic_arn
-  lambda_role         = var.lambda_role
+# Subnets
+resource "aws_subnet" "public" {
+  count                   = length(var.public_subnet_cidrs)
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnet_cidrs[count.index]
+  availability_zone       = var.azs[count.index]
+  map_public_ip_on_launch = true
+  tags = { Name = "${var.environment}-public-subnet-${count.index}" }
 }
- 
-module "lambda" {
-  source             = "./modules/lambda"
-  function_name      = var.lambda_function_name
-  role_arn           = module.iam.lambda_role_arn
-  source_bucket_name = var.source_bucket_name
-  dest_bucket_name   = var.dest_bucket_name
-  sns_topic_arn      = module.sns.topic_arn
-  resize_width       = var.resize_width
-  tags               = var.tags
+
+resource "aws_subnet" "private" {
+  count             = length(var.private_subnet_cidrs)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_subnet_cidrs[count.index]
+  availability_zone = var.azs[count.index]
+  tags = { Name = "${var.environment}-private-subnet-${count.index}" }
+}
+
+# Internet Gateway
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+  tags   = { Name = "${var.environment}-igw" }
+}
+
+# Route Tables and Associations
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+  tags = { Name = "${var.environment}-public-rt" }
+}
+
+resource "aws_route_table_association" "public" {
+  count          = length(aws_subnet.public[*].id)
+  subnet_id      = aws_subnet.public[count.index].id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_eip" "nat_eip" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.public[0].id
+  tags          = { Name = "${var.environment}-nat" }
+  depends_on    = [aws_internet_gateway.igw]
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+  tags = { Name = "${var.environment}-private-rt" }
+}
+
+resource "aws_route_table_association" "private" {
+  count          = length(aws_subnet.private[*].id)
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private.id
+}
+
+# IAM Role
+resource "aws_iam_role" "eks_role" {
+  name = "eksClusterRole"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "eks.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+# EKS Cluster
+resource "aws_eks_cluster" "eks" {
+  name     = "${var.environment}-eks"
+  role_arn = aws_iam_role.eks_role.arn
+
+  vpc_config {
+    subnet_ids = aws_subnet.private[*].id
+  }
+
+  depends_on = [aws_iam_role.eks_role]
+}
+
+# EKS Node Group
+resource "aws_eks_node_group" "node_group" {
+  cluster_name    = aws_eks_cluster.eks.name
+  node_group_name = "${var.environment}-node-group"
+  node_role_arn   = aws_iam_role.eks_role.arn
+  subnet_ids      = aws_subnet.private[*].id
+
+  scaling_config {
+    desired_size = 2
+    max_size     = 3
+    min_size     = 1
+  }
+
+  instance_types = ["t3.medium"]
+
+  depends_on = [aws_eks_cluster.eks]
 }
