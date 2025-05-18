@@ -50,7 +50,7 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_eip" "nat_eip" {
-  vpc = true
+  domain = vpc
 }
 
 resource "aws_nat_gateway" "nat" {
@@ -73,6 +73,18 @@ resource "aws_route_table_association" "private" {
   count          = length(aws_subnet.private[*].id)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
+}
+#ecr
+
+
+resource "aws_ecr_repository" "flask_app" {
+  name = "flask-app"
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+  tags = {
+    Name = "flask-app"
+  }
 }
 
 # IAM Role
