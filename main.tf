@@ -78,14 +78,17 @@ resource "aws_route_table_association" "private" {
 
 
 resource "aws_ecr_repository" "flask_app" {
-  name = "flask-app"
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-  tags = {
-    Name = "flask-app"
-  }
+  name = "flask-app"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "flask-app"
+  }
 }
+
 
 # IAM Role
 resource "aws_iam_role" "eks_role" {
