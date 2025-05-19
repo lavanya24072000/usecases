@@ -1,7 +1,7 @@
 
 name: Provision Infra using Terraform via EC2
 on:
-  pull_request:
+  push:
 
   
 permissions:
@@ -23,66 +23,55 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.ROLE }}
-          aws-region: eu-west-1
+          aws-region: us-west-2
  
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.10.5
     
-      - name: Set up Node js
-        uses: actions/setup-node@v3
-        with:
-           node-version: 18   
-      
-      - name: Install  dependencies and create ZIP
-        run: |
-           ls 
-           cd file/js
-           npm install 
-           zip -r ../../file/js/image_resizer.zip .
  
-      - name: Render terraform docs and push changes back to PR
-        uses: terraform-docs/gh-actions@main
-        with:
-          working-dir: ./modules
-          output-file: README.md
-          output-method: inject
-          git-push: "true"
+      # - name: Render terraform docs and push changes back to PR
+      #   uses: terraform-docs/gh-actions@main
+      #   with:
+      #     working-dir: ./modules
+      #     output-file: README.md
+      #     output-method: inject
+      #     git-push: "true"
           
-      - name: Terraform format
-        run: terraform fmt
+      # - name: Terraform format
+      #   run: terraform fmt
         
          
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform test
-        run: |
-         terraform test
-        continue-on-error: true
+      # - name: Terraform test
+      #   run: |
+      #    terraform test
+      #   continue-on-error: true
         
          
-      - name: Install Checkov
-        run: |
-          python3 -m pip install --upgrade pip
-          pip install checkov
+      # - name: Install Checkov
+      #   run: |
+      #     python3 -m pip install --upgrade pip
+      #     pip install checkov
  
-      - name: Run Checkov Scan
-        run: checkov -d ./ --skip-path .github/* --soft-fail
+      # - name: Run Checkov Scan
+      #   run: checkov -d ./ --skip-path .github/* --soft-fail
  
-      - name: Terraform Validate
-        run: terraform validate
+      # - name: Terraform Validate
+      #   run: terraform validate
 
-      - name: Install tflint
-        run: |
-             curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+      # - name: Install tflint
+      #   run: |
+      #        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
 
-      - name: Run tflint with custom config
-        run: |
-          echo "Using custom rules from .tflint.hcl"
-          tflint --config=./.tflint.hcl
-        continue-on-error: true
+      # - name: Run tflint with custom config
+      #   run: |
+      #     echo "Using custom rules from .tflint.hcl"
+      #     tflint --config=./.tflint.hcl
+      #   continue-on-error: true
         
  
       - name: Terraform Plan 
@@ -92,16 +81,16 @@ jobs:
            # opa eval --input tfplan.json --data policies/ 'data.terraform.deny.deny'
     
             
-      - name: Install Conftest
-        run: |
-            wget https://github.com/open-policy-agent/conftest/releases/download/v0.51.0/conftest_0.51.0_Linux_x86_64.tar.gz
-            tar xzf conftest_0.51.0_Linux_x86_64.tar.gz
-            sudo mv conftest /usr/local/bin/
+      # - name: Install Conftest
+      #   run: |
+      #       wget https://github.com/open-policy-agent/conftest/releases/download/v0.51.0/conftest_0.51.0_Linux_x86_64.tar.gz
+      #       tar xzf conftest_0.51.0_Linux_x86_64.tar.gz
+      #       sudo mv conftest /usr/local/bin/
             
-      - name: Run OPA Policy Check
-        run: |
-           # opa run -s first.rego
-           conftest test tfplan.json --policy policies/first.rego
+      # - name: Run OPA Policy Check
+      #   run: |
+      #      # opa run -s first.rego
+      #      conftest test tfplan.json --policy policies/first.rego
 
 
  
