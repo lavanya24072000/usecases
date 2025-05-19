@@ -1,3 +1,4 @@
-output "alb_dns" {
-  value = aws_lb.focal_alb.dns_name
-}
+variable "vpc_id" {}
+variable "subnet_id" {}
+variable "ec2_id" {}
+variable "security_group_id" {}
