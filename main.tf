@@ -15,10 +15,4 @@ module "ec2" {
   subnet_ids     = module.vpc.public_subnet_ids
 }
 
-module "alb" {
-  source            = "./modules/alb"
-  vpc_id            = module.vpc.vpc_id
-  subnet_ids        = module.vpc.public_subnet_ids
-  ec2_id            = module.ec2.ec2_id
-  security_group_id = module.ec2.security_group_id
-}
+
