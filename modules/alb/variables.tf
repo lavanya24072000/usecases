@@ -1,7 +1,7 @@
 variable "vpc_id" {}
 
 variable "subnet_ids" {
-  type        = list(string)
+  type  = list(string)
   description = "List of subnet IDs in different Availability Zones"
 }
 
