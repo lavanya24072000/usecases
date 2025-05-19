@@ -25,10 +25,12 @@ resource "aws_security_group" "focal_sg" {
   }
 }
  
+
 resource "aws_key_pair" "deployer" {
-  key_name   = "first"
-  public_key = file("~/.ssh/id_rsa.pub")
+  key_name   = "first"
+  public_key = file(var.public_key_path)
 }
+
 
 resource "aws_instance" "focal_ec2" {
   ami                         = var.ami_id
