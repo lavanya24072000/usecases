@@ -18,7 +18,7 @@ module "ec2" {
 module "alb" {
   source            = "./modules/alb"
   vpc_id            = module.vpc.vpc_id
-  subnet_id         = aws_subnet.public_a.id, aws_subnet.public_b.id]
+  subnet_id         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
   ec2_id            = module.ec2.ec2_id
   security_group_id = module.ec2.security_group_id
 }
