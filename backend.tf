@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket         = "demostore001"
-    key            = "uc5/terraform.tfstate"
+    bucket         = "abhi100bucket121"
+    key            = "usecase/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
     use_lockfile   = true
