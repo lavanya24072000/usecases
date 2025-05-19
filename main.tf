@@ -1,33 +1,24 @@
-module "s3" {
-  source              = "./modules/s3"
-  source_bucket_name  = var.source_bucket_name
-  dest_bucket_name    = var.dest_bucket_name
-  tags                = var.tags
- 
+provider "aws" {
+  region = var.aws_region
 }
  
-module "sns" {
-  source           = "./modules/sns"
-  topic_name       = var.sns_topic_name
-  tags             = var.tags
-  email            = var.email
+module "vpc" {
+  source = "./modules/vpc"
 }
  
-module "iam" {
-  source            = "./modules/iam"
-  source_bucket_arn = module.s3.source_bucket_arn
-  dest_bucket_arn   = module.s3.dest_bucket_arn
-  sns_topic_arn     = module.sns.topic_arn
-  lambda_role         = var.lambda_role
+module "ec2" {
+  source         = "./modules/ec2"
+  ami_id         = var.ami_id
+  instance_type  = var.instance_type
+  key_name       = var.key_name
+  vpc_id         = module.vpc.vpc_id
+  subnet_id      = module.vpc.subnet_id
 }
  
-module "lambda" {
-  source             = "./modules/lambda"
-  function_name      = var.lambda_function_name
-  role_arn           = module.iam.lambda_role_arn
-  source_bucket_name = var.source_bucket_name
-  dest_bucket_name   = var.dest_bucket_name
-  sns_topic_arn      = module.sns.topic_arn
-  resize_width       = var.resize_width
-  tags               = var.tags
+module "alb" {
+  source            = "./modules/alb"
+  vpc_id            = module.vpc.vpc_id
+  subnet_id         = module.vpc.subnet_id
+  ec2_id            = module.ec2.ec2_id
+  security_group_id = module.ec2.security_group_id
 }
