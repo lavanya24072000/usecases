@@ -1,3 +1,3 @@
-output "lambda_function_name" {
-  value = module.lambda.function_name
+output "alb_dns" {
+  value = module.alb.alb_dns
 }
