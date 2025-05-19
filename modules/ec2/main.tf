@@ -26,11 +26,11 @@ resource "aws_security_group" "focal_sg" {
 }
  
 
-resource "aws_key_pair" "deployer" {
-  key_name   = "first"
-  public_key = file(var.public_key_path)
-}
 
+resource "aws_key_pair" "deployer" {
+  key_name   = "first"
+  public_key = file(var.public_key_path)
+}
 
 resource "aws_instance" "focal_ec2" {
   ami                         = var.ami_id
@@ -40,7 +40,7 @@ resource "aws_instance" "focal_ec2" {
   associate_public_ip_address = true
   key_name                    = aws_key_pair.deployer.key_name
 
-   user_data = <<-EOF
+  user_data = <<-EOF
               #!/bin/bash
               apt update -y
               apt install nginx -y
@@ -52,3 +52,4 @@ resource "aws_instance" "focal_ec2" {
     Name = "focalboard-instance"
   }
 }
+
