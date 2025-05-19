@@ -11,5 +11,5 @@ variable "instance_type" {
 }
  
 variable "key_name" {
-  default = "your-key-name"
+  default = "first"
 }
