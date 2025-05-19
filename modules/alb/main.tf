@@ -1,10 +1,12 @@
+
 resource "aws_lb" "focal_alb" {
-  name               = "focalboard-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [var.security_group_id]
-  subnets            = [var.subnet_id]
+  name               = "focalboard-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [var.security_group_id]
+  subnets            = var.subnet_ids  
 }
+
  
 resource "aws_lb_target_group" "focal_tg" {
   name     = "focalboard-tg"
