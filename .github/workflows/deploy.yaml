@@ -74,5 +74,6 @@ jobs:
         run: terraform apply -auto-approve
         
       - name: Terraform destroy (Create EC2)
+        if: always()
         run: terraform destroy -auto-approve
         
