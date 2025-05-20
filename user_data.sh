@@ -12,7 +12,7 @@ app = Flask(__name__)
  
 def get_secret():
     client = boto3.client('secretsmanager', region_name='us-east-1')
-    secret = json.loads(client.get_secret_value(SecretId='aurora-db-secret')['SecretString'])
+    secret = json.loads(client.get_secret_value(SecretId='aurora-db-secret-first')['SecretString'])
     return secret
  
 @app.route('/')
