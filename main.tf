@@ -62,7 +62,6 @@ resource "aws_rds_cluster_instance" "aurora_instance" {
   cluster_identifier      = aws_rds_cluster.aurora.id
   instance_class          = "db.t3.medium"
   engine                  = aws_rds_cluster.aurora.engine
-  db_subnet_group_name    = aws_db_subnet_group.default.name
 }
 
 resource "aws_db_subnet_group" "default" {
