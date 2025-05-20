@@ -35,7 +35,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 
 # Create Secret in Secrets Manager
 resource "aws_secretsmanager_secret" "db_secret" {
-  name = "aurora-db-secret"
+  name = "aurora-db-secret-new"
 }
 
 resource "aws_secretsmanager_secret_version" "db_secret_version" {
