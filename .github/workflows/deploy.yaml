@@ -1,78 +1,41 @@
-name: Provision Infra using Terraform via EC2 
-
+name: Deploy Serverless App and Enable DevOps Guru
+ 
 on:
- push:
-permissions:
-  id-token: write
-  contents: read
+  push:
+    branches:
+      - main
+ 
 jobs:
-  provision:
-    name: Terraform Infra via EC2
+  deploy:
     runs-on: ubuntu-latest
  
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v3
  
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.ROLE }}
-          aws-region: us-east-2
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
  
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: '1.10.5'
-          
-      - name: Terraform formtat (Create EC2)
-        run: terraform fmt
-        
-
-      - name: Terraform init (Create EC2)
-        run: terraform init
-        
-      - name: Terraform validate 
-        run: terraform validate 
-
-      - name: Terraform plan (Create EC2)
-        run: terraform plan
-        
-      - name: Install tflint
-        run: |
-             curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-
-      - name: Run tflint with custom config
-        run: |
-          echo "Using custom rules from .tflint.hcl"
-          tflint --config=./.tflint.hcl
-        continue-on-error: true
-      # - name: Install terraform-docs
-      #   run: |
-      #       curl -s https://raw.githubusercontent.com/terraform-docs/terraform-docs/master/scripts/install.sh
+    - name: Deploy CloudFormation Stack
+      run: |
+        aws cloudformation deploy \
+          --template-file template.yaml \
+          --stack-name MyServerlessStack \
+          --capabilities CAPABILITY_NAMED_IAM
  
-      # # - name: Generate Terraform docs
-      # #   run: terraform-docs markdown . > README.md
+    - name: Enable DevOps Guru Monitoring
+      run: |
+        aws devops-guru update-resource-collection \
+          --action ADD \
+          --resource-collection '{"CloudFormation":{"StackNames":["MyServerlessStack"]}}'
  
-      # # - name: Commit docs
-      # #   if: github.ref == 'refs/heads/main'
-      # #   run: |
-      # #        git config user.name "GitHub Actions"
-      # #        git config user.email "actions@github.com"
-      # #        git add README.md
-      # #        git diff --cached --quiet || git commit -m "Update Terraform docs"
-      # #        git push
-             
-      # - name: Generate terraform docs
-      #   uses: terraform-docs/gh-actions@v1.0.0
-      #   with:
-      #      working-dir: ./modules/vpc
-      #      output-file: README.md
-      #      output-method: replace
-          
-      - name: Terraform Apply (Create EC2)
-        run: terraform apply -auto-approve
-        
-      - name: Terraform destroy (Create EC2)
-        run: terraform destroy -auto-approve
-        
+    - name: Show API Endpoint
+      run: |
+        aws cloudformation describe-stacks \
+          --stack-name MyServerlessStack \
+          --query "Stacks[0].Outputs" \
+          --output table
