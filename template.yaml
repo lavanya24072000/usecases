@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Serverless App with API Gateway, Lambda, and DynamoDB
+Description: Serverless app with Lambda, API Gateway, and DynamoDB
  
 Resources:
  
-  MyTable:
+  MyDynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: MyServerlessTable
@@ -25,9 +25,9 @@ Resources:
           - Effect: Allow
             Principal:
 Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
+            Action: "sts:AssumeRole"
       Policies:
-        - PolicyName: DynamoDBAccess
+        - PolicyName: LambdaPermissions
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -37,7 +37,7 @@ Service: lambda.amazonaws.com
                   - logs:*
                 Resource: "*"
  
-  MyLambda:
+  MyLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: MySimpleLambda
@@ -56,10 +56,15 @@ Service: lambda.amazonaws.com
   MyApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: SimpleApi
+      Name: MySimpleAPI
       ProtocolType: HTTP
-      Target: !GetAtt MyLambda.Arn
+      Target: !GetAtt MyLambdaFunction.Arn
  
 Outputs:
-  ApiEndpoint:
-Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com"
+  LambdaFunctionName:
+    Description: Name of the Lambda function
+    Value: !Ref MyLambdaFunction
+ 
+  APIGatewayID:
+    Description: ID of the created API Gateway
+    Value: !Ref MyApi
