@@ -1,54 +1,53 @@
-
-provider "aws" {{
+provider "aws" {
   region = var.region
-}}
+}
 
 # IAM Role for EC2 to access Secrets Manager
-resource "aws_iam_role" "ec2_secrets_role" {{
+resource "aws_iam_role" "ec2_secrets_role" {
   name = "ec2_secrets_role"
-  assume_role_policy = jsonencode({{
+  assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{{
+    Statement = [{
       Effect = "Allow",
-      Principal = {{ Service = "ec2.amazonaws.com" }},
+      Principal = { Service = "ec2.amazonaws.com" },
       Action = "sts:AssumeRole"
-    }}]
-  }})
-}}
+    }]
+  })
+}
 
-resource "aws_iam_role_policy" "secrets_access_policy" {{
+resource "aws_iam_role_policy" "secrets_access_policy" {
   name = "secrets_policy"
   role = aws_iam_role.ec2_secrets_role.id
-  policy = jsonencode({{
+  policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{{
+    Statement = [{
       Effect = "Allow",
       Action = ["secretsmanager:GetSecretValue"],
       Resource = "*"
-    }}]
-  }})
-}}
+    }]
+  })
+}
 
-resource "aws_iam_instance_profile" "ec2_profile" {{
+resource "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2_profile"
   role = aws_iam_role.ec2_secrets_role.name
-}}
+}
 
 # Create Secret in Secrets Manager
-resource "aws_secretsmanager_secret" "db_secret" {{
+resource "aws_secretsmanager_secret" "db_secret" {
   name = "aurora-db-secret"
-}}
+}
 
-resource "aws_secretsmanager_secret_version" "db_secret_version" {{
+resource "aws_secretsmanager_secret_version" "db_secret_version" {
   secret_id = aws_secretsmanager_secret.db_secret.id
-  secret_string = jsonencode({{
+  secret_string = jsonencode({
     username = var.db_username,
     password = var.db_password
-  }})
-}}
+  })
+}
 
 # Aurora Cluster and Instance
-resource "aws_rds_cluster" "aurora" {{
+resource "aws_rds_cluster" "aurora" {
   cluster_identifier      = "aurora-cluster"
   engine                  = "aurora-mysql"
   master_username         = var.db_username
@@ -56,26 +55,26 @@ resource "aws_rds_cluster" "aurora" {{
   skip_final_snapshot     = true
   database_name           = "sampledb"
   vpc_security_group_ids  = [var.security_group_id]
-}}
+}
 
-resource "aws_rds_cluster_instance" "aurora_instance" {{
+resource "aws_rds_cluster_instance" "aurora_instance" {
   identifier              = "aurora-instance-1"
   cluster_identifier      = aws_rds_cluster.aurora.id
   instance_class          = "db.t3.medium"
   engine                  = aws_rds_cluster.aurora.engine
   db_subnet_group_name    = aws_db_subnet_group.default.name
-}}
+}
 
-resource "aws_db_subnet_group" "default" {{
+resource "aws_db_subnet_group" "default" {
   name       = "aurora-subnet-group"
   subnet_ids = [
     var.subnet_id_1,
     var.subnet_id_2
   ]
-}}
+}
 
 # EC2 Instance with App
-resource "aws_instance" "app_ec2" {{
+resource "aws_instance" "app_ec2" {
   ami                         = "ami-0c7217cdde317cfec"
   instance_type               = "t2.micro"
   subnet_id                   = var.ec2_subnet_id
@@ -86,7 +85,7 @@ resource "aws_instance" "app_ec2" {{
 
   user_data = file("user_data.sh")
 
-  tags = {{
+  tags = {
     Name = "AppEC2"
-  }}
-}}
+  }
+}
