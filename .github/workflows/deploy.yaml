@@ -38,3 +38,4 @@ jobs:
           --stack-name MyServerlessStack \
           --query "Stacks[0].Outputs" \
           --output table
+
