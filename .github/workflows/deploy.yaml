@@ -23,14 +23,14 @@ jobs:
       run: |
         aws cloudformation deploy \
           --template-file template.yaml \
-          --stack-name MyServerlessStack \
+          --stack-name MyServerlessApp \
           --capabilities CAPABILITY_NAMED_IAM
  
     - name: Enable DevOps Guru Monitoring
       run: |
         aws devops-guru update-resource-collection \
           --action ADD \
-          --resource-collection '{"CloudFormation":{"StackNames":["MyServerlessStack"]}}'
+          --resource-collection '{"CloudFormation":{"StackNames":["MyServerlessApp"]}}'
  
     - name: Show API Endpoint
       run: |
