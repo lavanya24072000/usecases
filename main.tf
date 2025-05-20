@@ -35,7 +35,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 
 # Create Secret in Secrets Manager
 resource "aws_secretsmanager_secret" "db_secret" {
-  name = "aurora-db-secret-new"
+  name = "aurora-db-secret-first"
 }
 
 resource "aws_secretsmanager_secret_version" "db_secret_version" {
@@ -74,7 +74,7 @@ resource "aws_db_subnet_group" "default" {
 
 # EC2 Instance with App
 resource "aws_instance" "app_ec2" {
-  ami                         = "ami-0c7217cdde317cfec"
+  ami                         = "ami-0c7217cdde317cfec"n
   instance_type               = "t2.micro"
   subnet_id                   = var.ec2_subnet_id
   vpc_security_group_ids      = [var.security_group_id]
