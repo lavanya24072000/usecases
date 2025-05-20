@@ -74,7 +74,7 @@ resource "aws_db_subnet_group" "default" {
 
 # EC2 Instance with App
 resource "aws_instance" "app_ec2" {
-  ami                         = "ami-0c7217cdde317cfec"n
+  ami                         = "ami-0c7217cdde317cfec"
   instance_type               = "t2.micro"
   subnet_id                   = var.ec2_subnet_id
   vpc_security_group_ids      = [var.security_group_id]
