@@ -1,5 +1,6 @@
 name: Provision Infra using Terraform via EC2 
 
+
 on:
  push:
 permissions:
