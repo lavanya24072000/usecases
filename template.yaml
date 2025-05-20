@@ -1,43 +1,103 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Sample serverless stack
+Description: Serverless app with Lambda, API Gateway, DynamoDB, and IAM Roles
 
 Resources:
+  MyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: MyServerlessTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
-  MyLambdaExecutionRole:
+  LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: MyLambdaExecutionRole
+      RoleName: LambdaExecRole
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-            Action: "sts:AssumeRole"
+            Action: sts:AssumeRole
       Policies:
-        - PolicyName: LambdaLogsPolicy
+        - PolicyName: LambdaDynamoDBPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
                 Resource: "*"
 
-  MyLambdaFunction:
+  MyLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: MyTestLambda
+      FunctionName: MyServerlessLambda
       Runtime: python3.9
       Handler: index.handler
-      Role: !GetAtt MyLambdaExecutionRole.Arn
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 10
       Code:
         ZipFile: |
           import json
+          import boto3
+          import uuid
+
+          dynamodb = boto3.resource('dynamodb')
+          table = dynamodb.Table('MyServerlessTable')
+
           def handler(event, context):
+              item_id = str(uuid.uuid4())
+              table.put_item(Item={'id': item_id})
               return {
                   'statusCode': 200,
-                  'body': json.dumps('Hello from Lambda!')
+                  'body': json.dumps(f'Item added with id {item_id}')
               }
+
+  MyAPI:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: MyServerlessAPI
+      ProtocolType: HTTP
+
+  MyIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref MyAPI
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt MyLambda.Arn
+      PayloadFormatVersion: '2.0'
+
+  MyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref MyAPI
+      RouteKey: "POST /additem"
+      Target: !Sub "integrations/${MyIntegration}"
+
+  MyStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref MyAPI
+      AutoDeploy: true
+      StageName: prod
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref MyLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyAPI}/*/POST/additem"
