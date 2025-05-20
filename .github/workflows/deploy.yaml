@@ -20,12 +20,14 @@ jobs:
         aws-region: us-east-1
  
     - name: Deploy CloudFormation Stack
-      run: |
-        aws cloudformation deploy \
-          --template-file template.yaml \
-          --stack-name MyServerlessApp \
-          --capabilities CAPABILITY_NAMED_IAM
- 
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with:
+         name: MyServerlessApp
+         template: template.yaml
+         no-fail-on-empty-changeset: true
+         capabilities: CAPABILITY_NAMED_IAM
+         region: us-east-1
+         
     - name: Enable DevOps Guru Monitoring
       run: |
         aws devops-guru update-resource-collection \
