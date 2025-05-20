@@ -1,11 +1,7 @@
-output "alb_dns_name" {
-  value = aws_lb.app_lb.dns_name
+output "aurora_endpoint" {
+  value = aws_rds_cluster.aurora.endpoint
 }
-
-output "openproject_instance_ip" {
-  value = aws_instance.openproject.public_ip
-}
-
-output "devlake_instance_ip" {
-  value = aws_instance.devlake.public_ip
+ 
+output "ec2_public_ip" {
+  value = aws_instance.app_ec2.public_ip
 }
