@@ -1,21 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Serverless app with Lambda, API Gateway, and DynamoDB
- 
+Description: Sample serverless stack
+
 Resources:
- 
-  MyDynamoDBTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: MyServerlessTable
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
- 
-  MyLambdaRole:
+
+  MyLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: MyLambdaExecutionRole
@@ -24,47 +12,32 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-Service: lambda.amazonaws.com
+              Service: lambda.amazonaws.com
             Action: "sts:AssumeRole"
       Policies:
-        - PolicyName: LambdaPermissions
+        - PolicyName: LambdaLogsPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - dynamodb:*
-                  - logs:*
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
                 Resource: "*"
- 
+
   MyLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: MySimpleLambda
+      FunctionName: MyTestLambda
       Runtime: python3.9
       Handler: index.handler
-      Role: !GetAtt MyLambdaRole.Arn
+      Role: !GetAtt MyLambdaExecutionRole.Arn
       Code:
         ZipFile: |
           import json
           def handler(event, context):
               return {
-                  "statusCode": 200,
-                  "body": json.dumps("Hello from Lambda!")
+                  'statusCode': 200,
+                  'body': json.dumps('Hello from Lambda!')
               }
- 
-  MyApi:
-    Type: AWS::ApiGatewayV2::Api
-    Properties:
-      Name: MySimpleAPI
-      ProtocolType: HTTP
-      Target: !GetAtt MyLambdaFunction.Arn
- 
-Outputs:
-  LambdaFunctionName:
-    Description: Name of the Lambda function
-    Value: !Ref MyLambdaFunction
- 
-  APIGatewayID:
-    Description: ID of the created API Gateway
-    Value: !Ref MyApi
