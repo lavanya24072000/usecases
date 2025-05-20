@@ -1,7 +1,7 @@
 
 region = "us-east-1"
 db_username = "lavanya"
-db_password = "Lavanya@2407"
+db_password = "MySecurePass123!"
 key_name = "first"
 
 security_group_id = "sg-093eb83548cff8b73"
