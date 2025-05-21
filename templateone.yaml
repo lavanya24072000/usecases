@@ -1,128 +1,71 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Setup DynamoDB, Lambda, API Gateway and DevOps Guru to generate Proactive Insights
+Transform: AWS::Serverless-2016-10-31
+Description: Full stack: DynamoDB + Lambda + API Gateway + CloudWatch + DevOps Guru
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 10
+    MemorySize: 128
 
 Resources:
 
-  DevOpsGuruMonitoring:
-    Type: AWS::DevOpsGuru::ResourceCollection
-    Properties:
-      ResourceCollectionFilter:
-        CloudFormation:
-          StackNames:
-            - !Ref AWS::StackName
-
-  ReceiptTable:
+  ReceiptsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ReceiptTable
-      BillingMode: PAY_PER_REQUEST
+      TableName: ReceiptsTable
       AttributeDefinitions:
         - AttributeName: receiptId
           AttributeType: S
       KeySchema:
         - AttributeName: receiptId
           KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
+  ReceiptFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      RoleName: LambdaDynamoRole
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: LambdaDynamoPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:GetItem
-                  - dynamodb:Scan
-                Resource: "*"
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "*"
-
-  ReceiptLambdaFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: ReceiptReadFunction
+      FunctionName: ReceiptReaderFunction
       Handler: index.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: nodejs18.x
-      Timeout: 10
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const docClient = new AWS.DynamoDB.DocumentClient();
-          exports.handler = async function(event, context) {
-            const params = {
-              TableName: "ReceiptTable",
-              Key: {
-                "receiptId": "123"
-              }
-            };
-            // Simulate continuous reads to generate load
-            for (let i = 0; i < 100; i++) {
-              await docClient.get(params).promise();
-            }
-            return {
-              statusCode: 200,
-              body: "Read completed 100 times"
-            };
-          };
+      CodeUri: .
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /read-receipt
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: ReceiptsTable
+        - CloudWatchPutMetricPolicy: {}
 
-  ReceiptLambdaInvokePermission:
+  LambdaInvokeSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: rate(5 minutes)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt ReceiptFunction.Arn
+          Id: TargetFunction
+      Name: LambdaEvery5Minutes
+
+  PermissionForEventsToInvokeLambda:
     Type: AWS::Lambda::Permission
     Properties:
+      FunctionName: !Ref ReceiptFunction
       Action: lambda:InvokeFunction
-      FunctionName: !Ref ReceiptLambdaFunction
-      Principal: apigateway.amazonaws.com
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt LambdaInvokeSchedule.Arn
 
-  ReceiptApi:
-    Type: AWS::ApiGateway::RestApi
+  DevOpsGuruMonitor:
+    Type: AWS::DevOpsGuru::MonitoringConfiguration
     Properties:
-      Name: ReceiptAPI
-
-  ReceiptApiResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt ReceiptApi.RootResourceId
-      PathPart: read
-      RestApiId: !Ref ReceiptApi
-
-  ReceiptApiMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref ReceiptApi
-      ResourceId: !Ref ReceiptApiResource
-      HttpMethod: GET
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: 
-          Fn::Sub: 
-            - arn:aws:apigateway:${Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-            - Region: !Ref AWS::Region
-              LambdaArn: !GetAtt ReceiptLambdaFunction.Arn
-
-  ReceiptApiDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn: ReceiptApiMethod
-    Properties:
-      RestApiId: !Ref ReceiptApi
-      StageName: prod
+      ResourceCollection:
+        CloudFormation:
+          StackNames:
+            - !Ref AWS::StackName
 
 Outputs:
-  APIGatewayInvokeURL:
-    Value: !Sub "https://${ReceiptApi}.execute-api.${AWS::Region}.amazonaws.com/prod/read"
-    Description: "URL to trigger the Lambda and simulate load on DynamoDB"
+  APIEndpoint:
+    Description: "Invoke URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/read-receipt"
