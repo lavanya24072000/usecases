@@ -22,11 +22,14 @@ jobs:
     - name: Deploy CloudFormation Stack
       uses: aws-actions/aws-cloudformation-github-deploy@v1
       with:
-         name: MyServerlessApp
-         template: template.yaml
+         name: MyServerlessinsight
+         template: templateone.yaml
          no-fail-on-empty-changeset: true
          capabilities: CAPABILITY_NAMED_IAM
          region: us-east-1
+
+     
+      
          
     - name: Enable DevOps Guru Monitoring
       run: |
