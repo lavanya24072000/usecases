@@ -35,7 +35,7 @@ jobs:
       run: |
         aws devops-guru update-resource-collection \
           --action ADD \
-          --resource-collection '{"CloudFormation":{"StackNames":["MyServerlessApp"]}}'
+          --resource-collection '{"CloudFormation":{"StackNames":["MyServerlessinsight"]}}'
  
     - name: Show API Endpoint
       run: |
