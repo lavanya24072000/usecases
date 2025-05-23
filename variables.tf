@@ -1,5 +1,8 @@
-variable "lambda_zip_path" {}
-variable "function_name" {}
+variable "lambda_zip_path" {
+    default="./lambda_function.zip"}
+variable "function_name" {
+  default="lambda_hello"
+}
 variable "handler" {
   default = "lambda_function.lambda_handler"
 }
@@ -11,7 +14,9 @@ variable "environment_variables" {
   default = {}
 }
 variable "role_arn" {}
-variable "lambda_role_name" {}
+variable "lambda_role_name" {
+  default="lambda_role"
+}
 variable "user_pool_name" {}
 variable "app_client_name" {}
 variable "domain_prefix" {}
