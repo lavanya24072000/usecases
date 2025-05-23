@@ -1,7 +1,8 @@
-exports.handler = async (event) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify("Hello, World!"),
-  };
-};
+import boto3
+import os
  
+def lambda_handler(event, context):
+    return {
+        'statusCode': 200,
+        'body': 'Hello, World!'
+    }
