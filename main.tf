@@ -35,21 +35,42 @@ resource "aws_lambda_function" "hello" {
   filename = data.archive_file.lambda_zip.output_path
   source_code_hash =data.archive_file.lambda_zip.output_base64sha256
 }
- 
 resource "aws_cognito_user_pool" "user_pool" {
   name = "hello-user-pool"
 }
- 
-resource "aws_cognito_user_pool_client" "user_pool_client" {
-  name         = "hello-client"
+ resource "aws_cognito_user_pool_client" "client" {
+  name         = first
   user_pool_id = aws_cognito_user_pool.user_pool.id
-  callback_urls = ["https://example.com/callback"]
-  allowed_oauth_flows_user_pool_client = true
+ 
+  generate_secret     = false
   allowed_oauth_flows = ["code"]
-  allowed_oauth_scopes = ["email", "openid"]
+  allowed_oauth_scopes = [
+    "openid",
+    "email",
+    "profile",
+    "aws.cognito.signin.user.admin"
+  ]
   supported_identity_providers = ["COGNITO"]
+ 
+  callback_urls = [
+    "https://example.amazonaws.com"
+  ]
+ 
+  explicit_auth_flows = [
+    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
+ 
+  allowed_oauth_flows_user_pool_client = true
 }
  
+ 
+resource "aws_cognito_user_pool_domain" "domain" {
+  domain       = testt
+  user_pool_id = aws_cognito_user_pool.this.id
+}
+
+
 resource "aws_api_gateway_rest_api" "api" {
   name = "hello-api"
 }
