@@ -39,7 +39,7 @@ resource "aws_cognito_user_pool" "user_pool" {
   name = "hello-user-pool"
 }
  resource "aws_cognito_user_pool_client" "client" {
-  name         = first
+  name         = "first"
   user_pool_id = aws_cognito_user_pool.user_pool.id
  
   generate_secret     = false
@@ -66,8 +66,8 @@ resource "aws_cognito_user_pool" "user_pool" {
  
  
 resource "aws_cognito_user_pool_domain" "domain" {
-  domain       = testt
-  user_pool_id = aws_cognito_user_pool.this.id
+  domain       = "test"
+  user_pool_id = aws_cognito_user_pool.user_pool.id
 }
 
 
