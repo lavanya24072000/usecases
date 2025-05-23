@@ -50,7 +50,7 @@ resource "aws_cognito_user_pool_client" "client" {
   supported_identity_providers = ["COGNITO"]
 
   callback_urls = [
-    "https://${var.api_id}.execute-api.${var.aws_region}.amazonaws.com"
+    "https://example.amazonaws.com"
   ]
 
   explicit_auth_flows = [
