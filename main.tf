@@ -20,7 +20,13 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 role = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
- 
+
+ data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/lambda"
+  output_path = "${path.module}/lambda.zip"
+}
+
 resource "aws_lambda_function" "hello" {
   function_name = "hello-world"
   handler       = "index.handler"
