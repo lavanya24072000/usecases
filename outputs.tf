@@ -1,7 +1,8 @@
-output "aurora_endpoint" {
-  value = aws_rds_cluster.aurora.endpoint
+output "api_url" {
+  description = "API Gateway Invoke URL"
+  value       = "${aws_api_gateway_deployment.deployment.invoke_url}/hello"
 }
  
-output "ec2_public_ip" {
-  value = aws_instance.app_ec2.public_ip
+output "cognito_login_url" {
+value = "https://${aws_cognito_user_pool_client.user_pool_client.user_pool_id}.auth.${var.region}.amazoncognito.com/login"
 }
