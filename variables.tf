@@ -35,10 +35,6 @@ variable "domain_prefix" {
   default = "firstexample"
 }
 
-variable "api_id" {
-  description = "API Gateway ID for callback URL"
-  type        = string
-}
 
 variable "aws_region" {
   description = "AWS region"
