@@ -27,7 +27,10 @@ jobs:
           
       - name: Terraform formtat (Create EC2)
         run: terraform fmt
-        
+
+      - name: package lambda functions
+        run: |
+          zip -r ./lambda_function.zip ./lambda/main.py
 
       - name: Terraform init (Create EC2)
         run: terraform init
