@@ -1,90 +1,94 @@
 provider "aws" {
   region = var.region
 }
-
-# IAM Role for EC2 to access Secrets Manager
-resource "aws_iam_role" "ec2_secrets_role" {
-  name = "ec2_secrets_role"
+ 
+resource "aws_iam_role" "lambda_exec" {
+  name = "lambda_exec_role"
   assume_role_policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow",
-      Principal = { Service = "ec2.amazonaws.com" },
       Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+Service = "lambda.amazonaws.com"
+      }
     }]
   })
 }
-
-resource "aws_iam_role_policy" "secrets_access_policy" {
-  name = "secrets_policy"
-  role = aws_iam_role.ec2_secrets_role.id
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Action = ["secretsmanager:GetSecretValue"],
-      Resource = "*"
-    }]
-  })
+ 
+resource "aws_iam_role_policy_attachment" "lambda_basic" {
+role = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
-
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2_profile"
-  role = aws_iam_role.ec2_secrets_role.name
+ 
+resource "aws_lambda_function" "hello" {
+  function_name = "hello-world"
+  handler       = "index.handler"
+  runtime       = "nodejs18.x"
+  role          = aws_iam_role.lambda_exec.arn
+filename = "${path.module}/lambda.zip"
+source_code_hash = filebase64sha256("${path.module}/lambda.zip")
 }
-
-# Create Secret in Secrets Manager
-resource "aws_secretsmanager_secret" "db_secret" {
-  name = "aurora-db-secret-first"
+ 
+resource "aws_cognito_user_pool" "user_pool" {
+  name = "hello-user-pool"
 }
-
-resource "aws_secretsmanager_secret_version" "db_secret_version" {
-  secret_id = aws_secretsmanager_secret.db_secret.id
-  secret_string = jsonencode({
-    username = var.db_username,
-    password = var.db_password
-  })
+ 
+resource "aws_cognito_user_pool_client" "user_pool_client" {
+  name         = "hello-client"
+user_pool_id = aws_cognito_user_pool.user_pool.id
+callback_urls = ["https://example.com/callback"]
+  allowed_oauth_flows_user_pool_client = true
+  allowed_oauth_flows = ["code"]
+  allowed_oauth_scopes = ["email", "openid"]
+  supported_identity_providers = ["COGNITO"]
 }
-
-# Aurora Cluster and Instance
-resource "aws_rds_cluster" "aurora" {
-  cluster_identifier      = "aurora-cluster"
-  engine                  = "aurora-mysql"
-  master_username         = var.db_username
-  master_password         = var.db_password
-  skip_final_snapshot     = true
-  database_name           = "sampledb"
-  vpc_security_group_ids  = [var.security_group_id]
+ 
+resource "aws_api_gateway_rest_api" "api" {
+  name = "hello-api"
 }
-
-resource "aws_rds_cluster_instance" "aurora_instance" {
-  identifier              = "aurora-instance-1"
-  cluster_identifier      = aws_rds_cluster.aurora.id
-  instance_class          = "db.t3.medium"
-  engine                  = aws_rds_cluster.aurora.engine
+ 
+resource "aws_api_gateway_resource" "hello_resource" {
+rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  path_part   = "hello"
 }
-
-resource "aws_db_subnet_group" "default" {
-  name       = "aurora-subnet-group"
-  subnet_ids = [
-    var.subnet_id_1,
-    var.subnet_id_2
-  ]
+ 
+resource "aws_api_gateway_method" "get_hello" {
+rest_api_id = aws_api_gateway_rest_api.api.id
+resource_id = aws_api_gateway_resource.hello_resource.id
+  http_method   = "GET"
+  authorization = "COGNITO_USER_POOLS"
+authorizer_id = aws_api_gateway_authorizer.auth.id
 }
-
-# EC2 Instance with App
-resource "aws_instance" "app_ec2" {
-  ami                         = "ami-0c7217cdde317cfec"
-  instance_type               = "t2.micro"
-  subnet_id                   = var.ec2_subnet_id
-  vpc_security_group_ids      = [var.security_group_id]
-  key_name                    = var.key_name
-  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
-  associate_public_ip_address = true
-
-  user_data = file("user_data.sh")
-
-  tags = {
-    Name = "AppEC2"
-  }
+ 
+resource "aws_api_gateway_authorizer" "auth" {
+  name               = "cognito-authorizer"
+rest_api_id = aws_api_gateway_rest_api.api.id
+  identity_source    = "method.request.header.Authorization"
+  type               = "COGNITO_USER_POOLS"
+  provider_arns      = [aws_cognito_user_pool.user_pool.arn]
+}
+ 
+resource "aws_api_gateway_integration" "lambda_integration" {
+rest_api_id = aws_api_gateway_rest_api.api.id
+resource_id = aws_api_gateway_resource.hello_resource.id
+  http_method             = aws_api_gateway_method.get_hello.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.hello.invoke_arn
+}
+ 
+resource "aws_lambda_permission" "api_gateway" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.hello.function_name
+principal = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+}
+ 
+resource "aws_api_gateway_deployment" "deployment" {
+  depends_on = [aws_api_gateway_integration.lambda_integration]
+rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = "prod"
 }
