@@ -10,7 +10,7 @@ resource "aws_iam_role" "lambda_exec" {
       Action = "sts:AssumeRole"
       Effect = "Allow"
       Principal = {
-Service = "lambda.amazonaws.com"
+      Service = "lambda.amazonaws.com"
       }
     }]
   })
@@ -29,8 +29,8 @@ role = aws_iam_role.lambda_exec.name
 
 resource "aws_lambda_function" "hello" {
   function_name = "hello-world"
-  handler       = "index.handler"
-  runtime       = "nodejs18.x"
+  handler       = "main.lambda_handler"
+  runtime       = "python3.12"
   role          = aws_iam_role.lambda_exec.arn
   filename = data.archive_file.lambda_zip.output_path
   source_code_hash =data.archive_file.lambda_zip.output_base64sha256
@@ -42,8 +42,8 @@ resource "aws_cognito_user_pool" "user_pool" {
  
 resource "aws_cognito_user_pool_client" "user_pool_client" {
   name         = "hello-client"
-user_pool_id = aws_cognito_user_pool.user_pool.id
-callback_urls = ["https://example.com/callback"]
+  user_pool_id = aws_cognito_user_pool.user_pool.id
+  callback_urls = ["https://example.com/callback"]
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_flows = ["code"]
   allowed_oauth_scopes = ["email", "openid"]
@@ -89,7 +89,7 @@ resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.hello.function_name
-principal = "apigateway.amazonaws.com"
+  principal = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
 }
  
