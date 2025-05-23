@@ -26,8 +26,8 @@ resource "aws_lambda_function" "hello" {
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   role          = aws_iam_role.lambda_exec.arn
-filename = "${path.module}/lambda.zip"
-source_code_hash = filebase64sha256("${path.module}/lambda.zip")
+  filename = data.archive_file.lambda_zip.output_path
+  source_code_hash =data.archive_file.lambda_zip.output_base64sha256
 }
  
 resource "aws_cognito_user_pool" "user_pool" {
