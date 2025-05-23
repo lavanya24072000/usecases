@@ -6,7 +6,8 @@ resource "aws_apigatewayv2_api" "http_api" {
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id             = aws_apigatewayv2_api.http_api.id
   integration_type   = "AWS_PROXY"
-  integration_uri    = var.lambda_function_arn
+  integration_uri    = aws_lambda_function.this.arn
+
   integration_method = "POST"
   payload_format_version = "2.0"
 }
@@ -26,7 +27,7 @@ resource "aws_apigatewayv2_stage" "default_stage" {
 resource "aws_lambda_permission" "allow_apigw" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = var.lambda_function_arn
+  function_name =  aws_lambda_function.this.arn
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }
@@ -88,7 +89,7 @@ resource "aws_iam_policy_attachment" "lambda_basic_execution" {
 resource "aws_lambda_function" "this" {
   filename         = var.lambda_zip_path
   function_name    = var.function_name
-  role          = var.role_arn
+  role          =   aws_iam_role.lambda_exec_role.arn
   handler          = var.handler
   runtime          = var.runtime
   source_code_hash = filebase64sha256(var.lambda_zip_path)
