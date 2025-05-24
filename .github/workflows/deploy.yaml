@@ -1,4 +1,5 @@
 name: Deploy
+
 on:
   push:
 
@@ -22,24 +23,31 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Install Lambda dependencies
+    # Build Lambda Layer
+    - name: Build Lambda Layer
       run: |
-        mkdir -p lambda/python
-        pip install --target=lambda/python fitz PyMuPDF tiktoken boto3 psycopg2-binary openai
+        mkdir -p layer/python
+        pip install --target=layer/python fitz PyMuPDF tiktoken psycopg2-binary openai boto3
+        cd layer
+        zip -r ../layer.zip .
 
-    - name: Copy Lambda function
+    - name: Upload Lambda Layer to S3
       run: |
-        cp lambda/lambda_function.py lambda/python/
+        aws s3 cp layer.zip s3://my-cognito-login-page/layer.zip
 
-    - name: Zip Lambda package
+    # Build Lambda Function Package
+    - name: Build Lambda Function Package
       run: |
-        cd lambda/python
+        mkdir -p lambda/build
+        cp lambda/lambda_function.py lambda/build/
+        cd lambda/build
         zip -r ../ingestion.zip .
 
-    - name: Upload Lambda package to S3
+    - name: Upload Lambda Function to S3
       run: |
         aws s3 cp lambda/ingestion.zip s3://my-cognito-login-page/ingestion.zip
 
+    # Set up Terraform
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v3
       with:
