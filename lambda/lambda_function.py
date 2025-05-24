@@ -1,8 +1,13 @@
+
 import boto3
 import fitz  # PyMuPDF
 import tiktoken
 import psycopg2
+import openai
 import os
+
+# Set OpenAI API key from environment variable
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 def download_file(bucket_name, s3_key, local_path):
     s3 = boto3.client('s3')
@@ -18,9 +23,14 @@ def chunk_text(text, max_tokens=500):
     return [tokenizer.decode(tokens[i:i+max_tokens]) for i in range(0, len(tokens), max_tokens)]
 
 def generate_embeddings(chunks):
-    from openai import OpenAIEmbeddings
-    embedding_model = OpenAIEmbeddings()
-    return [embedding_model.embed(chunk) for chunk in chunks]
+    embeddings = []
+    for chunk in chunks:
+        response = openai.Embedding.create(
+            input=chunk,
+            model="text-embedding-ada-002"
+        )
+        embeddings.append(response['data'][0]['embedding'])
+    return embeddings
 
 def store_chunks(chunks, embeddings, db_config):
     conn = psycopg2.connect(**db_config)
