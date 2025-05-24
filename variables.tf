@@ -14,8 +14,7 @@ variable "db_user" {
 
 
 variable "db_password" {
-  type = string
-  default= "Prashola@2407"
+  default = "Prashola2407!"
 }
 
 variable "vpc_id" {
