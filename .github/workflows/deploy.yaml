@@ -10,30 +10,19 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-      
+
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v3
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
- 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-          terraform_version: '1.10.5'
-          
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
 
-    - name: Install dependencies
-      run: |
-        pip install boto3 fitz tiktoken psycopg2 openai
-        
-    - name: Debug - List files
-      run: ls -R
     - name: Install Lambda dependencies
       run: |
         mkdir -p lambda/python
@@ -41,27 +30,24 @@ jobs:
 
     - name: Copy Lambda function
       run: |
-         cp lambda/lambda_function.py lambda/python/
+        cp lambda/lambda_function.py lambda/python/
 
     - name: Zip Lambda package
       run: |
-         cd lambda/python
-         zip -r ../ingestion.zip .
+        cd lambda/python
+        zip -r ../ingestion.zip .
+
     - name: Upload Lambda package to S3
       run: |
         aws s3 cp lambda/ingestion.zip s3://my-cognito-login-page/ingestion.zip
 
-
-    # - name: Zip Lambda function
-    #   run: |
-    #     zip -j lambda/ingestion.zip lambda/lambda_function.py
-
     - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: '1.10.5'
 
     - name: Terraform Init
       run: terraform init
-     
 
     - name: Terraform Apply
       run: terraform apply -auto-approve
