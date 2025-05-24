@@ -23,17 +23,38 @@ jobs:
       with:
         python-version: 3.8
 
-    # Build Lambda Layer
-    - name: Build Lambda Layer
+    # Build Layer 1: PDF Processing
+    - name: Build Layer 1 - PDF Processing
       run: |
-        mkdir -p layer/python
-        pip install --target=layer/python fitz PyMuPDF tiktoken psycopg2-binary openai boto3
-        cd layer
-        zip -r ../layer.zip .
+        mkdir -p layer1/python
+        pip install --target=layer1/python PyMuPDF
+        cd layer1
+        zip -r ../layer1.zip .
 
-    - name: Upload Lambda Layer to S3
+    - name: Upload Layer 1 to S3
+      run: aws s3 cp layer1.zip s3://my-cognito-login-page/layer1.zip
+
+    # Build Layer 2: Embedding & Tokenization
+    - name: Build Layer 2 - Embedding
       run: |
-        aws s3 cp layer.zip s3://my-cognito-login-page/layer.zip
+        mkdir -p layer2/python
+        pip install --target=layer2/python tiktoken openai
+        cd layer2
+        zip -r ../layer2.zip .
+
+    - name: Upload Layer 2 to S3
+      run: aws s3 cp layer2.zip s3://my-cognito-login-page/layer2.zip
+
+    # Build Layer 3: Database & AWS SDK
+    - name: Build Layer 3 - DB & AWS
+      run: |
+        mkdir -p layer3/python
+        pip install --target=layer3/python psycopg2-binary boto3
+        cd layer3
+        zip -r ../layer3.zip .
+
+    - name: Upload Layer 3 to S3
+      run: aws s3 cp layer3.zip s3://my-cognito-login-page/layer3.zip
 
     # Build Lambda Function Package
     - name: Build Lambda Function Package
@@ -44,8 +65,7 @@ jobs:
         zip -r ../ingestion.zip .
 
     - name: Upload Lambda Function to S3
-      run: |
-        aws s3 cp lambda/ingestion.zip s3://my-cognito-login-page/ingestion.zip
+      run: aws s3 cp lambda/ingestion.zip s3://my-cognito-login-page/ingestion.zip
 
     # Set up Terraform
     - name: Set up Terraform
@@ -65,5 +85,3 @@ jobs:
         DB_NAME: first
         DB_USER: first
         DB_PASSWORD: Prashola@2407
-        VPC_ID: vpc-06c1c352d16a03fe2
-        SUBNET_IDS: subnet-029a8beb2b79e585c
