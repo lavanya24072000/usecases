@@ -7,7 +7,7 @@ resource "aws_s3_bucket" "documents_bucket" {
 }
 
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda-role"
+  name = "lambda-role-${random_id.suffix.hex}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
@@ -20,6 +20,11 @@ resource "aws_iam_role" "lambda_role" {
     }],
   })
 }
+
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
 
 resource "aws_iam_role_policy_attachment" "lambda_policy" {
   role       = aws_iam_role.lambda_role.name
