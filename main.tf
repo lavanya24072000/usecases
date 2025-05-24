@@ -28,23 +28,24 @@ resource "aws_iam_role_policy_attachment" "lambda_policy" {
 
 
 resource "aws_lambda_function" "ingestion_function" {
-  function_name = "document_ingestion"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.8"
-  filename      = "${path.module}/lambda/ingestion.zip"
-  source_code_hash = filebase64sha256("${path.module}/lambda/ingestion.zip")
+  function_name = "document_ingestion"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.8"
+  filename      = "${path.module}/lambda/ingestion.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda/ingestion.zip")
 
-  environment {
-    variables = {
-      BUCKET_NAME = aws_s3_bucket.documents_bucket.bucket
-      DB_HOST     = var.db_host
-      DB_NAME     = var.db_name
-      DB_USER     = var.db_user
-      DB_PASSWORD = var.db_password
-    }
-  }
+  environment {
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.documents_bucket.bucket
+      DB_HOST     = var.db_host
+      DB_NAME     = var.db_name
+      DB_USER     = var.db_user
+      DB_PASSWORD = var.db_password
+    }
+  }
 }
+
 
 resource "aws_rds_cluster" "aurora_cluster" {
   cluster_identifier = "aurora-cluster"
