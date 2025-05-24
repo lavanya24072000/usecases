@@ -36,7 +36,7 @@ resource "aws_lambda_function" "ingestion_function" {
   function_name = "document_ingestion"  
   s3_bucket     = "my-cognito-login-page"
   s3_key        = "ingestion.zip"
-  role          = aws_iam_role.lambda_exec.arn
+  role          = aws_iam_role.lambda_role.arn
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.8"
   timeout       = 30
@@ -53,6 +53,7 @@ resource "aws_lambda_function" "ingestion_function" {
     }
   }
 }
+
 
 
 
