@@ -11,11 +11,11 @@ variable "db_name" {
 variable "db_user" {
   default = "admin_user"
 }
-
-
 variable "db_password" {
-  default = "Prashola2407!"
+  default = "Prashola2407!"
 }
+
+
 
 variable "vpc_id" {
   type = string
