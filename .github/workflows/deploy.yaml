@@ -47,6 +47,9 @@ jobs:
       run: |
          cd lambda/python
          zip -r ../ingestion.zip .
+    - name: Upload Lambda package to S3
+      run: |
+        aws s3 cp lambda/ingestion.zip s3://my-cognito-login-page/ingestion.zip
 
 
     # - name: Zip Lambda function
