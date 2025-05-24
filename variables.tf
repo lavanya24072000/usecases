@@ -9,9 +9,9 @@ variable "db_name" {
 }
 
 variable "db_user" {
-  type = string
-  default= "first"
+  default = "admin_user"
 }
+
 
 variable "db_password" {
   type = string
