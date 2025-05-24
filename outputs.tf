@@ -1,28 +1,11 @@
-output "api_endpoint" {
-  value = aws_apigatewayv2_api.http_api.api_endpoint
+output "bucket_name" {
+  value = aws_s3_bucket.documents_bucket.bucket
 }
 
-output "api_id" {
-  value = aws_apigatewayv2_api.http_api.id
-}
-output "user_pool_id" {
-  value = aws_cognito_user_pool.this.id
+output "lambda_function_name" {
+  value = aws_lambda_function.ingestion_function.function_name
 }
 
-output "user_pool_arn" {
-  value = aws_cognito_user_pool.this.arn
-}
-
-output "client_id" {
-  value = aws_cognito_user_pool_client.client.id
-}
-output "role_arn" {
-  value = aws_iam_role.lambda_exec_role.arn
-}
-output "lambda_name" {
-  value = aws_lambda_function.this.function_name
-}
-
-output "lambda_function_arn" {
-  value = aws_lambda_function.this.arn
+output "db_endpoint" {
+  value = aws_rds_cluster.aurora_cluster.endpoint
 }
