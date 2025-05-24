@@ -32,13 +32,29 @@ resource "aws_iam_role_policy_attachment" "lambda_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AWSLambdaExecute"
 }
 
-resource "aws_lambda_layer_version" "dependencies_layer" {
-  layer_name          = "document-processing-deps"
+# Lambda Layers
+resource "aws_lambda_layer_version" "pdf_layer" {
+  layer_name          = "pdf-processing"
   s3_bucket           = "my-cognito-login-page"
-  s3_key              = "layer.zip"
+  s3_key              = "layer1.zip"
   compatible_runtimes = ["python3.8"]
 }
 
+resource "aws_lambda_layer_version" "embedding_layer" {
+  layer_name          = "embedding-tools"
+  s3_bucket           = "my-cognito-login-page"
+  s3_key              = "layer2.zip"
+  compatible_runtimes = ["python3.8"]
+}
+
+resource "aws_lambda_layer_version" "db_layer" {
+  layer_name          = "db-and-sdk"
+  s3_bucket           = "my-cognito-login-page"
+  s3_key              = "layer3.zip"
+  compatible_runtimes = ["python3.8"]
+}
+
+# Lambda Function
 resource "aws_lambda_function" "ingestion_function" {
   function_name = "document_ingestion"
   s3_bucket     = "my-cognito-login-page"
@@ -50,7 +66,11 @@ resource "aws_lambda_function" "ingestion_function" {
 
   source_code_hash = filebase64sha256("${path.module}/lambda/ingestion.zip")
 
-  layers = [aws_lambda_layer_version.dependencies_layer.arn]
+  layers = [
+    aws_lambda_layer_version.pdf_layer.arn,
+    aws_lambda_layer_version.embedding_layer.arn,
+    aws_lambda_layer_version.db_layer.arn
+  ]
 
   environment {
     variables = {
@@ -63,6 +83,7 @@ resource "aws_lambda_function" "ingestion_function" {
   }
 }
 
+# RDS Cluster
 resource "aws_rds_cluster" "aurora_cluster" {
   cluster_identifier   = "aurora-cluster-${random_id.suffix.hex}"
   engine               = "aurora-postgresql"
