@@ -84,3 +84,7 @@ jobs:
         DB_NAME: first
         DB_USER: first
         DB_PASSWORD: Prashola@2407
+
+
+    - name: Terraform Ades
+      run: terraform destroy -auto-approve
