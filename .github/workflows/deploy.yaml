@@ -17,73 +17,73 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+    # - name: Set up Python
+    #   uses: actions/setup-python@v2
+    #   with:
+    #     python-version: 3.8
 
-    # Build Layer 1: PDF Processing
-    - name: Build Layer 1 - PDF Processing
-      run: |
-        mkdir -p layer1/python
-        pip install --target=layer1/python PyMuPDF
-        cd layer1
-        zip -r ../layer1.zip .
+    # # Build Layer 1: PDF Processing
+    # - name: Build Layer 1 - PDF Processing
+    #   run: |
+    #     mkdir -p layer1/python
+    #     pip install --target=layer1/python PyMuPDF
+    #     cd layer1
+    #     zip -r ../layer1.zip .
 
-    - name: Upload Layer 1 to S3
-      run: aws s3 cp layer1.zip s3://my-cognito-login-page/layer1.zip
+    # - name: Upload Layer 1 to S3
+    #   run: aws s3 cp layer1.zip s3://my-cognito-login-page/layer1.zip
 
-    # Build Layer 2: Embedding & Tokenization
-    - name: Build Layer 2 - Embedding
-      run: |
-        mkdir -p layer2/python
-        pip install --target=layer2/python tiktoken openai
-        cd layer2
-        zip -r ../layer2.zip .
+    # # Build Layer 2: Embedding & Tokenization
+    # - name: Build Layer 2 - Embedding
+    #   run: |
+    #     mkdir -p layer2/python
+    #     pip install --target=layer2/python tiktoken openai
+    #     cd layer2
+    #     zip -r ../layer2.zip .
 
-    - name: Upload Layer 2 to S3
-      run: aws s3 cp layer2.zip s3://my-cognito-login-page/layer2.zip
+    # - name: Upload Layer 2 to S3
+    #   run: aws s3 cp layer2.zip s3://my-cognito-login-page/layer2.zip
 
-    # Build Layer 3: Database & AWS SDK
-    - name: Build Layer 3 - DB & AWS
-      run: |
-        mkdir -p layer3/python
-        pip install --target=layer3/python psycopg2-binary boto3
-        cd layer3
-        zip -r ../layer3.zip .
+    # # Build Layer 3: Database & AWS SDK
+    # - name: Build Layer 3 - DB & AWS
+    #   run: |
+    #     mkdir -p layer3/python
+    #     pip install --target=layer3/python psycopg2-binary boto3
+    #     cd layer3
+    #     zip -r ../layer3.zip .
 
-    - name: Upload Layer 3 to S3
-      run: aws s3 cp layer3.zip s3://my-cognito-login-page/layer3.zip
+    # - name: Upload Layer 3 to S3
+    #   run: aws s3 cp layer3.zip s3://my-cognito-login-page/layer3.zip
 
-    # Build Lambda Function Package
-    - name: Build Lambda Function Package
-      run: |
-        mkdir -p lambda/build
-        cp lambda/lambda_function.py lambda/build/
-        cd lambda/build
-        zip -r ../ingestion.zip .
+    # # Build Lambda Function Package
+    # - name: Build Lambda Function Package
+    #   run: |
+    #     mkdir -p lambda/build
+    #     cp lambda/lambda_function.py lambda/build/
+    #     cd lambda/build
+    #     zip -r ../ingestion.zip .
 
-    - name: Upload Lambda Function to S3
-      run: aws s3 cp lambda/ingestion.zip s3://my-cognito-login-page/ingestion.zip
+    # - name: Upload Lambda Function to S3
+    #   run: aws s3 cp lambda/ingestion.zip s3://my-cognito-login-page/ingestion.zip
 
-    # Set up Terraform
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: '1.10.5'
+    # # Set up Terraform
+    # - name: Set up Terraform
+    #   uses: hashicorp/setup-terraform@v3
+    #   with:
+    #     terraform_version: '1.10.5'
 
-    - name: Terraform Init
-      run: terraform init
+    # - name: Terraform Init
+    #   run: terraform init
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        DB_HOST: first
-        DB_NAME: first
-        DB_USER: first
-        DB_PASSWORD: Prashola@2407
+    # - name: Terraform Apply
+    #   run: terraform apply -auto-approve
+    #   env:
+    #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     DB_HOST: first
+    #     DB_NAME: first
+    #     DB_USER: first
+    #     DB_PASSWORD: Prashola@2407
 
 
     - name: Terraform Ades
