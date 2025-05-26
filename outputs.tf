@@ -1,11 +1,4 @@
-output "bucket_name" {
-  value = aws_s3_bucket.documents_bucket.bucket
+ variable "aws_region" {
+  default = "us-east-1"
 }
-
-output "lambda_function_name" {
-  value = aws_lambda_function.ingestion_function.function_name
-}
-
-output "db_endpoint" {
-  value = aws_rds_cluster.aurora_cluster.endpoint
-}
+ 
