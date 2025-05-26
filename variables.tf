@@ -14,7 +14,7 @@ variable "cloudtrail_name" {
 variable "cloudtrail_bucket_name" {
   description = "Name of the S3 bucket to store CloudTrail logs"
   type        = string
-  default     = "my-cloudtrail-bucket"
+  default     = "my-cloudtrail-bucket000011111"
 }
 
 variable "cloudwatch_log_group_name" {
