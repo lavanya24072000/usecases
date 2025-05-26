@@ -1,101 +1,84 @@
-resource "aws_apigatewayv2_api" "http_api" {
-  name          = "hello_api"
-  protocol_type = "HTTP"
+
+provider "aws" {
+  region = var.aws_region
 }
 
-resource "aws_apigatewayv2_integration" "lambda_integration" {
-  api_id             = aws_apigatewayv2_api.http_api.id
-  integration_type   = "AWS_PROXY"
-  integration_uri    = aws_lambda_function.this.arn
+resource "aws_cloudtrail" "trail" {
+  name                          = var.cloudtrail_name
+  s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
+  include_global_service_events = true
+  is_multi_region_trail         = true
+  enable_logging                = true
 
-  integration_method = "POST"
-  payload_format_version = "2.0"
+  event_selector {
+    read_write_type           = "All"
+    include_management_events = true
+  }
+
+  cloud_watch_logs_group_arn  = aws_cloudwatch_log_group.cloudtrail_log_group.arn
+  cloud_watch_logs_role_arn   = aws_iam_role.cloudtrail_role.arn
 }
 
-resource "aws_apigatewayv2_route" "default_route" {
-  api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+resource "aws_s3_bucket" "cloudtrail_bucket" {
+  bucket = var.cloudtrail_bucket_name
 }
 
-resource "aws_apigatewayv2_stage" "default_stage" {
-  api_id      = aws_apigatewayv2_api.http_api.id
-  name        = "$default"
-  auto_deploy = true
+resource "aws_cloudwatch_log_group" "cloudtrail_log_group" {
+  name = var.cloudwatch_log_group_name
 }
 
-resource "aws_lambda_permission" "allow_apigw" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name =  aws_lambda_function.this.arn
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
-}
-resource "aws_cognito_user_pool" "this" {
-  name = var.user_pool_name
-}
-
-resource "aws_cognito_user_pool_client" "client" {
-  name         = var.app_client_name
-  user_pool_id = aws_cognito_user_pool.this.id
-
-  generate_secret     = false
-  allowed_oauth_flows = ["code"]
-  allowed_oauth_scopes = [
-    "openid",
-    "email",
-    "profile",
-    "aws.cognito.signin.user.admin"
-  ]
-  supported_identity_providers = ["COGNITO"]
-
-  callback_urls = [
-    "https://example.amazonaws.com"
-  ]
-
-  explicit_auth_flows = [
-    "ALLOW_USER_PASSWORD_AUTH",
-    "ALLOW_REFRESH_TOKEN_AUTH"
-  ]
-
-  allowed_oauth_flows_user_pool_client = true
-}
-
-
-resource "aws_cognito_user_pool_domain" "domain" {
-  domain       = var.domain_prefix
-  user_pool_id = aws_cognito_user_pool.this.id
-}
-resource "aws_iam_role" "lambda_exec_role" {
-  name = var.lambda_role_name
+resource "aws_iam_role" "cloudtrail_role" {
+  name = var.cloudtrail_role_name
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{
-      Action    = "sts:AssumeRole",
-      Effect    = "Allow",
-      Principal = {
-        Service = "lambda.amazonaws.com"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole",
+        Effect    = "Allow",
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        }
       }
-    }]
+    ]
   })
 }
 
-resource "aws_iam_policy_attachment" "lambda_basic_execution" {
-  name       = "${var.lambda_role_name}-policy-attach"
-  roles      = [aws_iam_role.lambda_exec_role.name]
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+resource "aws_iam_role_policy_attachment" "cloudtrail_policy_attachment" {
+  role       = aws_iam_role.cloudtrail_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 }
-resource "aws_lambda_function" "this" {
-  filename         = var.lambda_zip_path
-  function_name    = var.function_name
-  role          =   aws_iam_role.lambda_exec_role.arn
-  handler          = var.handler
-  runtime          = var.runtime
-  source_code_hash = filebase64sha256(var.lambda_zip_path)
-  timeout          = 60
 
-  environment {
-    variables = var.environment_variables
+resource "aws_cloudwatch_log_metric_filter" "console_login_filter" {
+  name           = var.cloudwatch_metric_filter_name
+  log_group_name = aws_cloudwatch_log_group.cloudtrail_log_group.name
+  pattern        = "{ ($.eventName = "ConsoleLogin") && ($.responseElements.ConsoleLogin = "Success") }"
+
+  metric_transformation {
+    name      = var.cloudwatch_metric_name
+    namespace = var.cloudwatch_metric_namespace
+    value     = "1"
   }
+}
+
+resource "aws_cloudwatch_metric_alarm" "console_login_alarm" {
+  alarm_name          = var.cloudwatch_alarm_name
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "1"
+  metric_name         = aws_cloudwatch_log_metric_filter.console_login_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.console_login_filter.metric_transformation[0].namespace
+  period              = "60"
+  statistic           = "Sum"
+  threshold           = "1"
+  alarm_actions       = [aws_sns_topic.console_login_topic.arn]
+}
+
+resource "aws_sns_topic" "console_login_topic" {
+  name = var.sns_topic_name
+}
+
+resource "aws_sns_topic_subscription" "email_subscription" {
+  topic_arn = aws_sns_topic.console_login_topic.arn
+  protocol  = "email"
+  endpoint  = var.notification_email
 }
