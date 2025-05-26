@@ -1,4 +1,3 @@
-
 provider "aws" {
   region = var.aws_region
 }
@@ -11,65 +10,26 @@ resource "aws_s3_bucket" "documents_bucket" {
   bucket = "semantic-s3-documents-${random_id.bucket_id.hex}"
 }
 
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-}
-
-resource "aws_subnet" "subnet_1" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
-}
-
-resource "aws_subnet" "subnet_2" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1b"
-}
-
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
-}
-
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
-  }
-}
-
-resource "aws_route_table_association" "a" {
-  subnet_id      = aws_subnet.subnet_1.id
-  route_table_id = aws_route_table.public.id
-}
-
-resource "aws_route_table_association" "b" {
-  subnet_id      = aws_subnet.subnet_2.id
-  route_table_id = aws_route_table.public.id
-}
-
 resource "aws_db_subnet_group" "default" {
   name       = "pg-subnet-group"
   subnet_ids = [
-    aws_subnet.subnet_1.id,
-    aws_subnet.subnet_2.id
+    "subnet-09016363ef452fc3a",
+    "subnet-02ec2947263b84a83"
   ]
 }
 
 resource "aws_db_instance" "pg" {
-  identifier          = "pgvector-instance"
-  engine              = "postgres"
-  instance_class      = "db.t3.micro"
-  username            = "admin"
-  password            = "admin1234"
-  allocated_storage   = 20
-  db_name             = "semanticdb"
-  publicly_accessible = true
-  skip_final_snapshot = true
-  db_subnet_group_name = aws_db_subnet_group.default.name
-  vpc_security_group_ids = ["sg-07d0781c1a4bd48db"]
+  identifier             = "pgvector-instance"
+  engine                 = "postgres"
+  instance_class         = "db.t3.micro"
+  username               = "admin"
+  password               = "admin1234"
+  allocated_storage      = 20
+  db_name                = "semanticdb"
+  publicly_accessible    = true
+  skip_final_snapshot    = true
+  db_subnet_group_name   = aws_db_subnet_group.default.name
+  vpc_security_group_ids = ["sg-0b2a3f79a27e80eed"]
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -87,7 +47,7 @@ resource "aws_iam_role" "lambda_exec" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  role = aws_iam_role.lambda_exec.name
+  role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
