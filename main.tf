@@ -88,7 +88,7 @@ resource "aws_cloudtrail" "trail" {
 resource "aws_cloudwatch_log_metric_filter" "console_login_filter" {
   name           = "ConsoleLoginFilter"
   log_group_name = aws_cloudwatch_log_group.cloudtrail_log_group.name
-  pattern        = "{ ($.eventName = \\\"ConsoleLogin\\\") && ($.responseElements.ConsoleLogin = \\\"Success\\\") }"
+  pattern        = "{ ($.eventName = \"ConsoleLogin\") && ($.responseElements.ConsoleLogin = \"Success\") }"
 
   metric_transformation {
     name      = "SuccessfulConsoleLogin"
