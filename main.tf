@@ -50,16 +50,17 @@ resource "aws_iam_role_policy_attachment" "cloudtrail_policy_attachment" {
 }
 
 resource "aws_cloudwatch_log_metric_filter" "console_login_filter" {
-  name           = var.cloudwatch_metric_filter_name
+  name           = "ConsoleLoginFilter"
   log_group_name = aws_cloudwatch_log_group.cloudtrail_log_group.name
-  pattern        = "{ ($.eventName = "ConsoleLogin") && ($.responseElements.ConsoleLogin = "Success") }"
+  pattern        = "{ ($.eventName = \"ConsoleLogin\") && ($.responseElements.ConsoleLogin = \"Success\") }"
 
   metric_transformation {
-    name      = var.cloudwatch_metric_name
-    namespace = var.cloudwatch_metric_namespace
+    name      = "SuccessfulConsoleLogin"
+    namespace = "SecurityMetrics"
     value     = "1"
   }
 }
+
 
 resource "aws_cloudwatch_metric_alarm" "console_login_alarm" {
   alarm_name          = var.cloudwatch_alarm_name
