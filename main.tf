@@ -12,7 +12,7 @@ resource "aws_s3_bucket" "documents_bucket" {
  
 resource "aws_db_subnet_group" "default" {
   name       = "pg-subnet-group"
-  subnet_ids = "subnet-01224d04bf2330624" 
+  subnet_ids = ["subnet-01224d04bf2330624"] 
 }
  
 resource "aws_db_instance" "pg" {
