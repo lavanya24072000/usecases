@@ -1,119 +1,102 @@
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
 }
-
+ 
 resource "random_id" "bucket_id" {
   byte_length = 4
 }
-
-resource "aws_s3_bucket" "documents" {
-  bucket = "semantic-search-docs-${random_id.bucket_id.hex}"
+ 
+resource "aws_s3_bucket" "documents_bucket" {
+  bucket = "semantic-s3-documents-${random_id.bucket_id.hex}"
 }
  
-data "archive_file" "ingestion_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/ingestion_lambda"
-  output_path = "${path.module}/ingestion.zip"
+resource "aws_db_subnet_group" "default" {
+  name       = "pg-subnet-group"
+  subnet_ids = [/* your subnet IDs here */]  # replace with your private subnet IDs
 }
-
-data "archive_file" "search_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/search_lambda"
-  output_path = "${path.module}/search.zip"
+ 
+resource "aws_db_instance" "pg" {
+  identifier          = "pgvector-instance"
+  engine              = "postgres"
+  instance_class      = "db.t3.micro"
+  username            = "admin"
+  password            = "admin1234"
+  allocated_storage   = 20
+  db_name             = "semanticdb"
+  publicly_accessible = true
+  skip_final_snapshot = true
+db_subnet_group_name = aws_db_subnet_group.default.name
+  vpc_security_group_ids = [/* your security group IDs allowing access to DB */]
 }
-
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda_exec_role"
+ 
+resource "aws_iam_role" "lambda_exec" {
+  name = "lambda-role"
   assume_role_policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow",
-      Principal = { Service = "lambda.amazonaws.com" },
+      Effect = "Allow"
+      Principal = {
+Service = "lambda.amazonaws.com"
+      }
       Action = "sts:AssumeRole"
     }]
   })
 }
-
-resource "aws_iam_role_policy_attachment" "basic_exec" {
-  role       = aws_iam_role.lambda_exec_role.name
+ 
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+role = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
-
-resource "aws_lambda_function" "ingestion" {
-  function_name = "semantic_ingestion"
-  handler       = "lambda_function.lambda_handler"
+ 
+resource "aws_lambda_function" "search_api" {
+  function_name = "semantic-search-api"
   runtime       = "python3.11"
-  role          = aws_iam_role.lambda_exec_role.arn
-  filename      = data.archive_file.ingestion_zip.output_path
-
+  handler       = "app.lambda_handler"
+  role          = aws_iam_role.lambda_exec.arn
+filename = "lambda_package.zip"
+  timeout       = 30
+ 
   environment {
     variables = {
-      OPENAI_KEY = var.openai_api_key
-      PG_HOST    = var.pg_host
-      PG_USER    = var.pg_user
-      PG_PASS    = var.pg_pass
-      PG_DB      = var.pg_db
+DB_HOST = aws_db_instance.pg.address
+      DB_NAME = "semanticdb"
+      DB_USER = "admin"
+      DB_PASS = "admin1234"
     }
   }
 }
-
-resource "aws_lambda_function" "search" {
-  function_name = "semantic_search"
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.11"
-  role          = aws_iam_role.lambda_exec_role.arn
-  filename      = data.archive_file.search_zip.output_path
-
-  environment {
-    variables = {
-      OPENAI_KEY = var.openai_api_key
-      PG_HOST    = var.pg_host
-      PG_USER    = var.pg_user
-      PG_PASS    = var.pg_pass
-      PG_DB      = var.pg_db
-    }
-  }
+ 
+resource "aws_api_gateway_rest_api" "semantic_api" {
+  name = "semantic-search-api"
 }
-
-resource "aws_s3_bucket_notification" "lambda_trigger" {
-  bucket = aws_s3_bucket.documents.id
-  lambda_function {
-    lambda_function_arn = aws_lambda_function.ingestion.arn
-    events              = ["s3:ObjectCreated:*"]
-  }
-  depends_on = [aws_lambda_permission.allow_s3]
+ 
+resource "aws_api_gateway_resource" "search" {
+rest_api_id = aws_api_gateway_rest_api.semantic_api.id
+  parent_id   = aws_api_gateway_rest_api.semantic_api.root_resource_id
+  path_part   = "search"
 }
-
-resource "aws_lambda_permission" "allow_s3" {
-  statement_id  = "AllowS3Invoke"
+ 
+resource "aws_api_gateway_method" "search_method" {
+rest_api_id = aws_api_gateway_rest_api.semantic_api.id
+resource_id = aws_api_gateway_resource.search.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+ 
+resource "aws_api_gateway_integration" "lambda_integration" {
+rest_api_id = aws_api_gateway_rest_api.semantic_api.id
+resource_id = aws_api_gateway_resource.search.id
+  http_method             = aws_api_gateway_method.search_method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.search_api.invoke_arn
+}
+ 
+resource "aws_lambda_permission" "api_gateway" {
+  statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ingestion.function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.documents.arn
-}
-
-resource "aws_apigatewayv2_api" "search_api" {
-  name          = "semantic-search-api"
-  protocol_type = "HTTP"
-}
-
-resource "aws_apigatewayv2_integration" "lambda_integration" {
-  api_id             = aws_apigatewayv2_api.search_api.id
-  integration_type   = "AWS_PROXY"
-  integration_uri    = aws_lambda_function.search.invoke_arn
-  integration_method = "POST"
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_route" "search_route" {
-  api_id    = aws_apigatewayv2_api.search_api.id
-  route_key = "POST /search"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
-}
-
-resource "aws_apigatewayv2_stage" "default_stage" {
-  api_id      = aws_apigatewayv2_api.search_api.id
-  name        = "$default"
-  auto_deploy = true
+  function_name = aws_lambda_function.search_api.function_name
+principal = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.semantic_api.execution_arn}/*/*"
 }
  
