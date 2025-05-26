@@ -3,7 +3,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-
 resource "aws_cloudtrail" "trail" {
   name                          = var.cloudtrail_name
   s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
@@ -11,7 +10,7 @@ resource "aws_cloudtrail" "trail" {
   is_multi_region_trail         = true
   enable_logging                = true
 
-  cloud_watch_logs_group_arn = aws_cloudwatch_log_group.cloudtrail_log_group.arn
+  cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.cloudtrail_log_group.arn}:*"
   cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_role.arn
 
   depends_on = [
@@ -20,7 +19,6 @@ resource "aws_cloudtrail" "trail" {
     aws_iam_role_policy_attachment.cloudtrail_policy_attachment
   ]
 }
-
 
 resource "aws_s3_bucket" "cloudtrail_bucket" {
   bucket = var.cloudtrail_bucket_name
@@ -63,7 +61,6 @@ resource "aws_cloudwatch_log_metric_filter" "console_login_filter" {
     value     = "1"
   }
 }
-
 
 resource "aws_cloudwatch_metric_alarm" "console_login_alarm" {
   alarm_name          = var.cloudwatch_alarm_name
