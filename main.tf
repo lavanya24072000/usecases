@@ -1,27 +1,44 @@
-
 provider "aws" {
   region = var.aws_region
 }
 
-resource "aws_cloudtrail" "trail" {
-  name                          = var.cloudtrail_name
-  s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
-  include_global_service_events = true
-  is_multi_region_trail         = true
-  enable_logging                = true
-
-  cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.cloudtrail_log_group.arn}:*"
-  cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_role.arn
-
-  depends_on = [
-    aws_cloudwatch_log_group.cloudtrail_log_group,
-    aws_iam_role.cloudtrail_role,
-    aws_iam_role_policy_attachment.cloudtrail_policy_attachment
-  ]
-}
+data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket" "cloudtrail_bucket" {
   bucket = var.cloudtrail_bucket_name
+}
+
+resource "aws_s3_bucket_policy" "cloudtrail_bucket_policy" {
+  bucket = aws_s3_bucket.cloudtrail_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AWSCloudTrailAclCheck",
+        Effect    = "Allow",
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        },
+        Action    = "s3:GetBucketAcl",
+        Resource  = "arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.id}"
+      },
+      {
+        Sid       = "AWSCloudTrailWrite",
+        Effect    = "Allow",
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        },
+        Action    = "s3:PutObject",
+        Resource  = "arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.id}/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+          }
+        }
+      }
+    ]
+  })
 }
 
 resource "aws_cloudwatch_log_group" "cloudtrail_log_group" {
@@ -50,10 +67,28 @@ resource "aws_iam_role_policy_attachment" "cloudtrail_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 }
 
+resource "aws_cloudtrail" "trail" {
+  name                          = var.cloudtrail_name
+  s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
+  include_global_service_events = true
+  is_multi_region_trail         = true
+  enable_logging                = true
+
+  cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.cloudtrail_log_group.arn}:*"
+  cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_role.arn
+
+  depends_on = [
+    aws_cloudwatch_log_group.cloudtrail_log_group,
+    aws_iam_role.cloudtrail_role,
+    aws_iam_role_policy_attachment.cloudtrail_policy_attachment,
+    aws_s3_bucket_policy.cloudtrail_bucket_policy
+  ]
+}
+
 resource "aws_cloudwatch_log_metric_filter" "console_login_filter" {
   name           = "ConsoleLoginFilter"
   log_group_name = aws_cloudwatch_log_group.cloudtrail_log_group.name
-  pattern        = "{ ($.eventName = \"ConsoleLogin\") && ($.responseElements.ConsoleLogin = \"Success\") }"
+  pattern        = "{ ($.eventName = \\\"ConsoleLogin\\\") && ($.responseElements.ConsoleLogin = \\\"Success\\\") }"
 
   metric_transformation {
     name      = "SuccessfulConsoleLogin"
