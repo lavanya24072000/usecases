@@ -12,7 +12,7 @@ resource "aws_s3_bucket" "documents_bucket" {
  
 resource "aws_db_subnet_group" "default" {
   name       = "pg-subnet-group"
-  subnet_ids = [/* your subnet IDs here */]  # replace with your private subnet IDs
+  subnet_ids = "subnet-01224d04bf2330624" 
 }
  
 resource "aws_db_instance" "pg" {
@@ -25,12 +25,12 @@ resource "aws_db_instance" "pg" {
   db_name             = "semanticdb"
   publicly_accessible = true
   skip_final_snapshot = true
-db_subnet_group_name = aws_db_subnet_group.default.name
-  vpc_security_group_ids = [/* your security group IDs allowing access to DB */]
+  db_subnet_group_name = aws_db_subnet_group.default.name
+  vpc_security_group_ids = "sg-07d0781c1a4bd48db"
 }
  
 resource "aws_iam_role" "lambda_exec" {
-  name = "lambda-role"
+  name = "lambda-role001"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -58,7 +58,7 @@ filename = "lambda_package.zip"
  
   environment {
     variables = {
-DB_HOST = aws_db_instance.pg.address
+      DB_HOST = aws_db_instance.pg.address
       DB_NAME = "semanticdb"
       DB_USER = "admin"
       DB_PASS = "admin1234"
