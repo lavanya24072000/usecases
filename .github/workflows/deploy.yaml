@@ -2,9 +2,7 @@ name: Deploy Infra and Lambda
  
 on:
   push:
-    branches:
-      - main
- 
+   
 jobs:
   terraform:
     runs-on: ubuntu-latest
