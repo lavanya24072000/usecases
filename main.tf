@@ -5,20 +5,20 @@ provider "aws" {
 
 
 resource "aws_cloudtrail" "trail" {
-  name                          = var.cloudtrail_name
-  s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
-  include_global_service_events = true
-  is_multi_region_trail         = true
-  enable_logging                = true
+  name                          = var.cloudtrail_name
+  s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
+  include_global_service_events = true
+  is_multi_region_trail         = true
+  enable_logging                = true
 
-  cloud_watch_logs_group_arn = aws_cloudwatch_log_group.cloudtrail_log_group.arn
-  cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_role.arn
+  cloud_watch_logs_group_arn = aws_cloudwatch_log_group.cloudtrail_log_group.arn
+  cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_role.arn
 
-  depends_on = [
-    aws_cloudwatch_log_group.cloudtrail_log_group,
-    aws_iam_role.cloudtrail_role,
-    aws_iam_role_policy_attachment.cloudtrail_policy_attachment
-  ]
+  depends_on = [
+    aws_cloudwatch_log_group.cloudtrail_log_group,
+    aws_iam_role.cloudtrail_role,
+    aws_iam_role_policy_attachment.cloudtrail_policy_attachment
+  ]
 }
 
 
