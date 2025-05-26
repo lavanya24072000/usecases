@@ -26,7 +26,7 @@ resource "aws_db_instance" "pg" {
   publicly_accessible = true
   skip_final_snapshot = true
   db_subnet_group_name = aws_db_subnet_group.default.name
-  vpc_security_group_ids = "sg-07d0781c1a4bd48db"
+  vpc_security_group_ids = ["sg-07d0781c1a4bd48db"]
 }
  
 resource "aws_iam_role" "lambda_exec" {
