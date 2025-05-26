@@ -22,8 +22,8 @@ resource "aws_db_instance" "pg" {
   identifier             = "pgvector-instance"
   engine                 = "postgres"
   instance_class         = "db.t3.micro"
-  username               = "pgadminuser"
-  password               = "admin1234!"
+  username               = "pgauser"
+  password               = "user1234!"
   allocated_storage      = 20
   db_name                = "semanticdb"
   publicly_accessible    = true
