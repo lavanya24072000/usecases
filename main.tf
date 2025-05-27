@@ -34,8 +34,8 @@ resource "aws_servicecatalog_constraint" "template_constraint" {
       RegionRule = {
         Assertions = [
           {
-            Assert = "Fn::Equals([Ref("AWS::Region"), "us-east-1"])"
-            AssertDescription = "S3 buckets must be created in us-east-1"
+            "Assert" = "Fn::Equals([Ref(\"AWS::Region\"), \"us-east-1\"])"
+            "AssertDescription" = "S3 buckets must be created in us-east-1"
           }
         ]
       }
