@@ -34,8 +34,8 @@ resource "aws_servicecatalog_constraint" "template_constraint" {
       RegionRule = {
         Assertions = [
           {
-            "Assert" = "Fn::Equals([Ref(\"AWS::Region\"), \"us-east-1\"])"
-            "AssertDescription" = "S3 buckets must be created in us-east-1"
+            Assert = "Fn::Equals([Ref("AWS::Region"), "us-east-1"])"
+            AssertDescription = "S3 buckets must be created in us-east-1"
           }
         ]
       }
@@ -58,7 +58,7 @@ resource "aws_servicecatalog_tag_option" "env_tag" {
 }
 
 resource "aws_servicecatalog_tag_option_resource_association" "tag_association" {
-  resource_id = aws_servicecatalog_product.s3_product.id
+  resource_id   = aws_servicecatalog_product.s3_product.id
   tag_option_id = aws_servicecatalog_tag_option.env_tag.id
 }
 
